@@ -1,0 +1,30 @@
+# dependencies
+/node_modules
+
+# Next.js build output
+/.next
+/out
+
+# local environment files
+.env*
+!.env.example
+
+# test output
+/coverage
+/playwright-report
+/test-results
+
+# logs and OS files
+*.log
+.DS_Store
+
+# local scratch files
+/tmp
+
+# framework-generated agent guidance
+/AGENTS.md
+/CLAUDE.md
+
+# TypeScript
+*.tsbuildinfo
+next-env.d.ts
