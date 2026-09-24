@@ -29,7 +29,7 @@ cp .env.example .env
 docker compose up -d
 ```
 
-Database schemas live in `src/db/schema.ts`. Generate and apply migrations with:
+Database schemas live in `src/db/schema/`. Generate and apply migrations with:
 
 ```bash
 npm run db:generate
