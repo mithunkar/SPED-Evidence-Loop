@@ -19,6 +19,23 @@ npm run dev
 
 Open [http://localhost:3000](http://localhost:3000) in a browser.
 
+## Local database
+
+The development database is PostgreSQL 17. With Docker installed, copy the
+example environment file and start the database:
+
+```bash
+cp .env.example .env
+docker compose up -d
+```
+
+Database schemas live in `src/db/schema.ts`. Generate and apply migrations with:
+
+```bash
+npm run db:generate
+npm run db:migrate
+```
+
 ## Quality checks
 
 ```bash
