@@ -94,6 +94,14 @@ export const goalStrategyAssignments = pgTable(
       table.workspaceId,
       table.id,
     ),
+    uniqueIndex(
+      "goal_strategy_assignments_workspace_goal_id_version_unique",
+    ).on(
+      table.workspaceId,
+      table.goalId,
+      table.id,
+      table.strategyVersion,
+    ),
     uniqueIndex("goal_strategy_assignments_one_active_per_goal_unique")
       .on(table.workspaceId, table.goalId)
       .where(sql`${table.status} = 'ACTIVE'`),

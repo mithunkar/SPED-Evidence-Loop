@@ -146,6 +146,11 @@ export const goals = pgTable(
       table.workspaceId,
       table.id,
     ),
+    uniqueIndex("goals_workspace_student_id_id_unique").on(
+      table.workspaceId,
+      table.studentId,
+      table.id,
+    ),
     foreignKey({
       name: "goals_student_foreign_key",
       columns: [table.workspaceId, table.studentId],
