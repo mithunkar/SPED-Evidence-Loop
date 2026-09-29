@@ -1,3 +1,5 @@
+import Link from "next/link";
+
 const steps = [
   { number: "01", label: "Define", detail: "Student-specific goals" },
   { number: "02", label: "Observe", detail: "Fast session scoring" },
@@ -14,7 +16,7 @@ export default function Home() {
           </span>
           <span>SPED Evidence Loop</span>
         </a>
-        <span className="prototype-badge">Foundation build</span>
+        <span className="prototype-badge">Synthetic demo available</span>
       </nav>
 
       <section className="hero" id="top">
@@ -25,9 +27,18 @@ export default function Home() {
             A private classroom tool for recording goal-level observations,
             understanding progress, and preparing accurate family conversations.
           </p>
+          <div className="hero-actions">
+            <Link className="primary-link" href="/demo/session">
+              Open the scoring demo
+              <span aria-hidden="true">→</span>
+            </Link>
+            <a className="secondary-link" href="#workflow">
+              See the workflow
+            </a>
+          </div>
           <div className="status-row" aria-label="Current project status">
             <span className="status-dot" aria-hidden="true" />
-            Local application foundation is ready
+            Uses fictional classroom data only
           </div>
         </div>
 
@@ -49,7 +60,7 @@ export default function Home() {
         </aside>
       </section>
 
-      <section className="workflow" aria-labelledby="workflow-title">
+      <section className="workflow" id="workflow" aria-labelledby="workflow-title">
         <div className="section-heading">
           <p className="eyebrow">The evidence loop</p>
           <h2 id="workflow-title">Built around the classroom workflow</h2>
