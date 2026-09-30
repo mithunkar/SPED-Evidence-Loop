@@ -1,6 +1,7 @@
 export type DemoStrategy = {
   name: string;
   reminder: string;
+  fidelityPrompt: string;
 };
 
 export type DemoGoal = {
@@ -39,6 +40,7 @@ export const DEMO_SESSION = {
         name: "Visual cue and wait time",
         reminder:
           "Show one visual cue, give the direction once, then wait five seconds.",
+        fidelityPrompt: "Was the visual cue and wait time used as planned?",
       },
     },
     {
@@ -51,6 +53,7 @@ export const DEMO_SESSION = {
         name: "Pause, model, invite",
         reminder:
           "Pause before helping, model the request once, then invite River to respond.",
+        fidelityPrompt: "Was pause, model, invite used as planned?",
       },
     },
     {

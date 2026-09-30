@@ -16,5 +16,10 @@ describe("synthetic scoring fixture", () => {
   it("includes strategy guidance without requiring every goal to have one", () => {
     expect(DEMO_SESSION.goals.some((goal) => goal.strategy !== null)).toBe(true);
     expect(DEMO_SESSION.goals.some((goal) => goal.strategy === null)).toBe(true);
+    expect(
+      DEMO_SESSION.goals
+        .filter((goal) => goal.strategy !== null)
+        .every((goal) => goal.strategy.fidelityPrompt.length > 0),
+    ).toBe(true);
   });
 });
