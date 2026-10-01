@@ -5,6 +5,7 @@ import {
   createDemoSubmission,
   createEmptyDemoDrafts,
   restoreDemoDrafts,
+  restoreDemoSubmissions,
   serializeDemoDrafts,
 } from "@/demo/demo-storage";
 import { DEMO_SESSION } from "@/demo/fixtures";
@@ -102,6 +103,75 @@ describe("synthetic demo storage", () => {
     const stored = JSON.parse(appendDemoSubmission("not-json", submission));
 
     expect(stored).toEqual({ version: 1, submissions: [submission] });
+  });
+
+  it("restores valid submissions and rejects malformed observations", () => {
+    const submission = createDemoSubmission(
+      DEMO_SESSION,
+      createCompleteDrafts(),
+      "synthetic-submission-1",
+      "2026-09-30T16:00:00.000Z",
+    );
+    const invalidSubmission = {
+      ...submission,
+      id: "synthetic-submission-invalid",
+      observations: [
+        {
+          ...submission.observations[0],
+          score: null,
+          noDataReason: null,
+        },
+      ],
+    };
+
+    expect(
+      restoreDemoSubmissions(
+        JSON.stringify({
+          version: 1,
+          submissions: [submission, invalidSubmission],
+        }),
+      ),
+    ).toEqual([submission]);
+  });
+
+  it("rejects stored fidelity that does not match the strategy snapshot", () => {
+    const submission = createDemoSubmission(
+      DEMO_SESSION,
+      createCompleteDrafts(),
+      "synthetic-submission-1",
+      "2026-09-30T16:00:00.000Z",
+    );
+    const invalidSubmission = {
+      ...submission,
+      observations: submission.observations.map((observation, index) =>
+        index === 0
+          ? { ...observation, fidelityStatus: null }
+          : observation,
+      ),
+    };
+
+    expect(
+      restoreDemoSubmissions(
+        JSON.stringify({ version: 1, submissions: [invalidSubmission] }),
+      ),
+    ).toEqual([]);
+  });
+
+  it("drops malformed saved submissions before appending a new one", () => {
+    const submission = createDemoSubmission(
+      DEMO_SESSION,
+      createCompleteDrafts(),
+      "synthetic-submission-1",
+      "2026-09-30T16:00:00.000Z",
+    );
+    const stored = JSON.parse(
+      appendDemoSubmission(
+        JSON.stringify({ version: 1, submissions: [{ id: "bad-data" }] }),
+        submission,
+      ),
+    );
+
+    expect(stored.submissions).toEqual([submission]);
   });
 
   it("refuses to create an incomplete submission", () => {

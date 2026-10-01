@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useEffect, useState, useSyncExternalStore } from "react";
 
 import {
@@ -436,6 +437,11 @@ export function ScoringSession({
           >
             Start another synthetic session
           </button>
+          {submissionStored ? (
+            <Link className="submission-history-link" href="/demo/history">
+              Review submitted history
+            </Link>
+          ) : null}
         </section>
       )}
     </>

@@ -24,7 +24,12 @@ export default function DemoSessionPage() {
           </span>
           <span>Evidence Loop</span>
         </Link>
-        <span className="demo-user">{DEMO_SESSION.scorerLabel}</span>
+        <div className="demo-header-actions">
+          <Link className="demo-history-link" href="/demo/history">
+            Session history
+          </Link>
+          <span className="demo-user">{DEMO_SESSION.scorerLabel}</span>
+        </div>
       </header>
 
       <ScoringSession

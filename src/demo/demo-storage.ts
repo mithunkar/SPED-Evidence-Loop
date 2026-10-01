@@ -80,6 +80,69 @@ const isDemoGoalDraft = (value: unknown): value is DemoGoalDraft => {
   );
 };
 
+const isNonEmptyString = (value: unknown, maxLength: number) =>
+  typeof value === "string" &&
+  value.trim().length > 0 &&
+  value.length <= maxLength;
+
+const isDemoSubmissionObservation = (
+  value: unknown,
+): value is DemoSubmissionObservation => {
+  if (!isRecord(value)) {
+    return false;
+  }
+
+  const scoreIsValid = value.score === null || rubricScores.has(value.score);
+  const reasonIsValid = noDataReasons.has(value.noDataReason);
+  const scoreAndReasonAgree =
+    value.score === null ? reasonIsValid : value.noDataReason === null;
+  const strategyIsValid =
+    value.strategyName === null || isNonEmptyString(value.strategyName, 200);
+  const fidelityAndStrategyAgree =
+    value.strategyName === null
+      ? value.fidelityStatus === null
+      : fidelityStatuses.has(value.fidelityStatus);
+
+  return (
+    isNonEmptyString(value.goalId, 200) &&
+    isNonEmptyString(value.goalTitle, 300) &&
+    strategyIsValid &&
+    scoreIsValid &&
+    scoreAndReasonAgree &&
+    fidelityAndStrategyAgree &&
+    typeof value.note === "string" &&
+    value.note.length <= 1_000
+  );
+};
+
+const isDemoSubmission = (value: unknown): value is DemoSubmission => {
+  if (!isRecord(value) || !isRecord(value.student)) {
+    return false;
+  }
+
+  if (
+    !Array.isArray(value.observations) ||
+    value.observations.length === 0 ||
+    value.observations.length > 100 ||
+    !value.observations.every(isDemoSubmissionObservation)
+  ) {
+    return false;
+  }
+
+  const goalIds = value.observations.map((observation) => observation.goalId);
+
+  return (
+    isNonEmptyString(value.id, 200) &&
+    isNonEmptyString(value.submittedAt, 100) &&
+    Number.isFinite(Date.parse(value.submittedAt as string)) &&
+    isNonEmptyString(value.student.id, 200) &&
+    isNonEmptyString(value.student.displayName, 200) &&
+    isNonEmptyString(value.sessionType, 200) &&
+    isNonEmptyString(value.scorerLabel, 200) &&
+    new Set(goalIds).size === goalIds.length
+  );
+};
+
 export const createEmptyDemoDrafts = (
   goalIds: readonly string[],
 ): DemoDrafts =>
@@ -154,7 +217,7 @@ export function createDemoSubmission(
         strategyName: goal.strategy?.name ?? null,
         score: draft.score === "ND" ? null : draft.score,
         noDataReason: draft.score === "ND" ? draft.noDataReason : null,
-        fidelityStatus: draft.fidelityStatus,
+        fidelityStatus: goal.strategy ? draft.fidelityStatus : null,
         note: draft.note,
       };
     }),
@@ -165,25 +228,42 @@ export function appendDemoSubmission(
   serialized: string | null,
   submission: DemoSubmission,
 ) {
-  let existing: unknown[] = [];
-
-  if (serialized !== null) {
-    try {
-      const stored: unknown = JSON.parse(serialized);
-      if (
-        isRecord(stored) &&
-        stored.version === 1 &&
-        Array.isArray(stored.submissions)
-      ) {
-        existing = stored.submissions;
-      }
-    } catch {
-      existing = [];
-    }
-  }
+  const existing = restoreDemoSubmissions(serialized);
 
   return JSON.stringify({
     version: 1,
-    submissions: [submission, ...existing],
+    submissions: [submission, ...existing].slice(0, 100),
   });
+}
+
+export function restoreDemoSubmissions(serialized: string | null) {
+  if (serialized === null) {
+    return [];
+  }
+
+  try {
+    const stored: unknown = JSON.parse(serialized);
+    if (
+      !isRecord(stored) ||
+      stored.version !== 1 ||
+      !Array.isArray(stored.submissions)
+    ) {
+      return [];
+    }
+
+    const seenIds = new Set<string>();
+    return stored.submissions
+      .filter(isDemoSubmission)
+      .filter((submission) => {
+        if (seenIds.has(submission.id)) {
+          return false;
+        }
+
+        seenIds.add(submission.id);
+        return true;
+      })
+      .slice(0, 100);
+  } catch {
+    return [];
+  }
 }

@@ -8,9 +8,14 @@ import {
 export const DEMO_STORAGE_UNAVAILABLE = "__demo_storage_unavailable__";
 
 const draftListeners = new Set<() => void>();
+const submissionListeners = new Set<() => void>();
 
 const emitDraftChange = () => {
   draftListeners.forEach((listener) => listener());
+};
+
+const emitSubmissionChange = () => {
+  submissionListeners.forEach((listener) => listener());
 };
 
 export function subscribeToDemoDraft(listener: () => void) {
@@ -32,6 +37,30 @@ export function subscribeToDemoDraft(listener: () => void) {
 export function getDemoDraftSnapshot() {
   try {
     return window.localStorage.getItem(DEMO_DRAFT_STORAGE_KEY);
+  } catch {
+    return DEMO_STORAGE_UNAVAILABLE;
+  }
+}
+
+export function subscribeToDemoSubmissions(listener: () => void) {
+  const handleStorage = (event: StorageEvent) => {
+    if (event.key === DEMO_SUBMISSIONS_STORAGE_KEY) {
+      listener();
+    }
+  };
+
+  submissionListeners.add(listener);
+  window.addEventListener("storage", handleStorage);
+
+  return () => {
+    submissionListeners.delete(listener);
+    window.removeEventListener("storage", handleStorage);
+  };
+}
+
+export function getDemoSubmissionsSnapshot() {
+  try {
+    return window.localStorage.getItem(DEMO_SUBMISSIONS_STORAGE_KEY);
   } catch {
     return DEMO_STORAGE_UNAVAILABLE;
   }
@@ -60,6 +89,7 @@ export function storeDemoSubmission(submission: DemoSubmission) {
     );
     window.localStorage.removeItem(DEMO_DRAFT_STORAGE_KEY);
     emitDraftChange();
+    emitSubmissionChange();
     return true;
   } catch {
     return false;
