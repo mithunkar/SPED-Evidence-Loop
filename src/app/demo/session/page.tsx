@@ -14,7 +14,7 @@ export default function DemoSessionPage() {
     <main className="demo-shell">
       <div className="demo-banner" role="note">
         <span className="demo-banner-dot" aria-hidden="true" />
-        Synthetic local demo — no student information is stored
+        Synthetic local demo — fictional entries stay on this device
       </div>
 
       <header className="demo-header">

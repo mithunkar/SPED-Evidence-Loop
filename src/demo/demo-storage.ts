@@ -1,0 +1,189 @@
+import type { DemoSession } from "@/demo/fixtures";
+import {
+  createEmptyDemoGoalDraft,
+  isDemoGoalDraftComplete,
+  type DemoGoalDraft,
+} from "@/demo/scoring-state";
+import type {
+  NoDataReason,
+  RubricScore,
+  StrategyFidelityStatus,
+} from "@/domain/scoring";
+
+export const DEMO_DRAFT_STORAGE_KEY =
+  "sped-evidence-loop:demo-session-draft:v1";
+export const DEMO_SUBMISSIONS_STORAGE_KEY =
+  "sped-evidence-loop:demo-submissions:v1";
+
+export type DemoDrafts = Record<string, DemoGoalDraft>;
+
+export type DemoSubmissionObservation = {
+  goalId: string;
+  goalTitle: string;
+  strategyName: string | null;
+  score: RubricScore | null;
+  noDataReason: NoDataReason | null;
+  fidelityStatus: StrategyFidelityStatus | null;
+  note: string;
+};
+
+export type DemoSubmission = {
+  id: string;
+  submittedAt: string;
+  student: DemoSession["student"];
+  sessionType: string;
+  scorerLabel: string;
+  observations: DemoSubmissionObservation[];
+};
+
+const rubricScores = new Set<unknown>([0, 1, 2, 3, 4]);
+const noDataReasons = new Set<unknown>([
+  "NO_OPPORTUNITY",
+  "STUDENT_ABSENT",
+  "GOAL_NOT_OBSERVED",
+  "SESSION_INTERRUPTED",
+  "OTHER",
+]);
+const fidelityStatuses = new Set<unknown>([
+  "FULL",
+  "PARTIAL",
+  "NOT_USED",
+  "NOT_APPLICABLE",
+]);
+
+const isRecord = (value: unknown): value is Record<string, unknown> =>
+  typeof value === "object" && value !== null && !Array.isArray(value);
+
+const isDemoGoalDraft = (value: unknown): value is DemoGoalDraft => {
+  if (!isRecord(value)) {
+    return false;
+  }
+
+  const scoreIsValid =
+    value.score === null || value.score === "ND" || rubricScores.has(value.score);
+  const reasonIsValid =
+    value.noDataReason === null || noDataReasons.has(value.noDataReason);
+  const fidelityIsValid =
+    value.fidelityStatus === null ||
+    fidelityStatuses.has(value.fidelityStatus);
+  const noteIsValid =
+    typeof value.note === "string" && value.note.length <= 1_000;
+  const scoreAndReasonAgree =
+    value.score === "ND" || value.noDataReason === null;
+
+  return (
+    scoreIsValid &&
+    reasonIsValid &&
+    fidelityIsValid &&
+    noteIsValid &&
+    scoreAndReasonAgree
+  );
+};
+
+export const createEmptyDemoDrafts = (
+  goalIds: readonly string[],
+): DemoDrafts =>
+  Object.fromEntries(
+    goalIds.map((goalId) => [goalId, createEmptyDemoGoalDraft()]),
+  );
+
+export function serializeDemoDrafts(drafts: DemoDrafts) {
+  return JSON.stringify({ version: 1, drafts });
+}
+
+export function restoreDemoDrafts(
+  serialized: string | null,
+  goalIds: readonly string[],
+) {
+  const emptyDrafts = createEmptyDemoDrafts(goalIds);
+
+  if (serialized === null) {
+    return emptyDrafts;
+  }
+
+  try {
+    const stored: unknown = JSON.parse(serialized);
+    if (
+      !isRecord(stored) ||
+      stored.version !== 1 ||
+      !isRecord(stored.drafts)
+    ) {
+      return emptyDrafts;
+    }
+
+    const storedDrafts = stored.drafts;
+    return Object.fromEntries(
+      goalIds.map((goalId) => {
+        const draft = storedDrafts[goalId];
+        return [
+          goalId,
+          isDemoGoalDraft(draft) ? draft : createEmptyDemoGoalDraft(),
+        ];
+      }),
+    );
+  } catch {
+    return emptyDrafts;
+  }
+}
+
+export function createDemoSubmission(
+  session: DemoSession,
+  drafts: DemoDrafts,
+  id: string,
+  submittedAt: string,
+): DemoSubmission {
+  const hasIncompleteGoal = session.goals.some((goal) =>
+    !isDemoGoalDraftComplete(drafts[goal.id], goal.strategy !== null),
+  );
+
+  if (hasIncompleteGoal) {
+    throw new Error("Cannot submit an incomplete synthetic session.");
+  }
+
+  return {
+    id,
+    submittedAt,
+    student: session.student,
+    sessionType: session.sessionType,
+    scorerLabel: session.scorerLabel,
+    observations: session.goals.map((goal) => {
+      const draft = drafts[goal.id];
+      return {
+        goalId: goal.id,
+        goalTitle: goal.title,
+        strategyName: goal.strategy?.name ?? null,
+        score: draft.score === "ND" ? null : draft.score,
+        noDataReason: draft.score === "ND" ? draft.noDataReason : null,
+        fidelityStatus: draft.fidelityStatus,
+        note: draft.note,
+      };
+    }),
+  };
+}
+
+export function appendDemoSubmission(
+  serialized: string | null,
+  submission: DemoSubmission,
+) {
+  let existing: unknown[] = [];
+
+  if (serialized !== null) {
+    try {
+      const stored: unknown = JSON.parse(serialized);
+      if (
+        isRecord(stored) &&
+        stored.version === 1 &&
+        Array.isArray(stored.submissions)
+      ) {
+        existing = stored.submissions;
+      }
+    } catch {
+      existing = [];
+    }
+  }
+
+  return JSON.stringify({
+    version: 1,
+    submissions: [submission, ...existing],
+  });
+}

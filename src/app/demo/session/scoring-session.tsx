@@ -1,10 +1,28 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState, useSyncExternalStore } from "react";
 
+import {
+  clearDemoDraft,
+  DEMO_STORAGE_UNAVAILABLE,
+  getDemoDraftSnapshot,
+  storeDemoSubmission,
+  subscribeToDemoDraft,
+  writeDemoDraftSnapshot,
+} from "@/demo/demo-browser-store";
 import type { DemoSession } from "@/demo/fixtures";
 import {
-  createEmptyDemoGoalDraft,
+  createDemoSubmission,
+  createEmptyDemoDrafts,
+  restoreDemoDrafts,
+  serializeDemoDrafts,
+  type DemoDrafts,
+} from "@/demo/demo-storage";
+import {
+  FIDELITY_LABELS,
+  NO_DATA_REASON_LABELS,
+} from "@/demo/scoring-labels";
+import {
   isDemoGoalDraftComplete,
   type DemoGoalDraft,
   type DemoScore,
@@ -14,6 +32,8 @@ import type {
   RubricScore,
   StrategyFidelityStatus,
 } from "@/domain/scoring";
+
+import { SessionReview } from "./session-review";
 
 type RubricLevel = {
   value: RubricScore;
@@ -28,20 +48,7 @@ type ScoringSessionProps = {
   fidelityStatuses: readonly StrategyFidelityStatus[];
 };
 
-const noDataReasonLabels: Record<NoDataReason, string> = {
-  NO_OPPORTUNITY: "No opportunity",
-  STUDENT_ABSENT: "Student absent",
-  GOAL_NOT_OBSERVED: "Goal not observed",
-  SESSION_INTERRUPTED: "Session interrupted",
-  OTHER: "Other",
-};
-
-const fidelityLabels: Record<StrategyFidelityStatus, string> = {
-  FULL: "Used as planned",
-  PARTIAL: "Partly used",
-  NOT_USED: "Not used",
-  NOT_APPLICABLE: "N/A",
-};
+type SessionMode = "entry" | "review" | "submitted";
 
 export function ScoringSession({
   session,
@@ -49,37 +56,114 @@ export function ScoringSession({
   noDataReasons,
   fidelityStatuses,
 }: ScoringSessionProps) {
-  const [drafts, setDrafts] = useState<Record<string, DemoGoalDraft>>(() =>
-    Object.fromEntries(
-      session.goals.map((goal) => [goal.id, createEmptyDemoGoalDraft()]),
-    ),
+  const storedDraftSnapshot = useSyncExternalStore(
+    subscribeToDemoDraft,
+    getDemoDraftSnapshot,
+    () => null,
   );
+  const restoredDrafts = restoreDemoDrafts(
+    storedDraftSnapshot === DEMO_STORAGE_UNAVAILABLE
+      ? null
+      : storedDraftSnapshot,
+    session.goals.map((goal) => goal.id),
+  );
+  const [fallbackDrafts, setFallbackDrafts] = useState<DemoDrafts>(() =>
+    createEmptyDemoDrafts(session.goals.map((goal) => goal.id)),
+  );
+  const drafts =
+    storedDraftSnapshot === DEMO_STORAGE_UNAVAILABLE
+      ? fallbackDrafts
+      : restoredDrafts;
+  const [mode, setMode] = useState<SessionMode>("entry");
+  const [submissionStored, setSubmissionStored] = useState(false);
+  const [submittedDrafts, setSubmittedDrafts] =
+    useState<DemoDrafts | null>(null);
+  const activeDrafts =
+    mode === "submitted" && submittedDrafts ? submittedDrafts : drafts;
 
   const completedCount = session.goals.filter((goal) =>
-    isDemoGoalDraftComplete(drafts[goal.id], goal.strategy !== null),
+    isDemoGoalDraftComplete(activeDrafts[goal.id], goal.strategy !== null),
   ).length;
   const progress = session.goals.length
     ? (completedCount / session.goals.length) * 100
     : 0;
+  const allGoalsComplete =
+    session.goals.length > 0 && completedCount === session.goals.length;
+
+  useEffect(() => {
+    const headingId =
+      mode === "review"
+        ? "session-review-title"
+        : mode === "submitted"
+          ? "submission-confirmation-title"
+          : null;
+
+    if (headingId) {
+      document.getElementById(headingId)?.focus();
+    }
+  }, [mode]);
 
   const updateDraft = (goalId: string, patch: Partial<DemoGoalDraft>) => {
-    setDrafts((current) => ({
-      ...current,
-      [goalId]: { ...current[goalId], ...patch },
-    }));
+    const updatedDrafts = {
+      ...drafts,
+      [goalId]: { ...drafts[goalId], ...patch },
+    };
+    if (!writeDemoDraftSnapshot(serializeDemoDrafts(updatedDrafts))) {
+      setFallbackDrafts(updatedDrafts);
+    }
   };
 
   const selectScore = (goalId: string, score: DemoScore) => {
-    setDrafts((current) => ({
-      ...current,
+    const updatedDrafts = {
+      ...drafts,
       [goalId]: {
-        ...current[goalId],
+        ...drafts[goalId],
         score,
-        noDataReason:
-          score === "ND" ? current[goalId].noDataReason : null,
+        noDataReason: score === "ND" ? drafts[goalId].noDataReason : null,
       },
-    }));
+    };
+    if (!writeDemoDraftSnapshot(serializeDemoDrafts(updatedDrafts))) {
+      setFallbackDrafts(updatedDrafts);
+    }
   };
+
+  const openReview = () => {
+    if (allGoalsComplete) {
+      setMode("review");
+    }
+  };
+
+  const submitSession = () => {
+    if (!allGoalsComplete) {
+      return;
+    }
+
+    const submission = createDemoSubmission(
+      session,
+      drafts,
+      globalThis.crypto.randomUUID(),
+      new Date().toISOString(),
+    );
+
+    setSubmittedDrafts(drafts);
+    setSubmissionStored(storeDemoSubmission(submission));
+    setMode("submitted");
+  };
+
+  const startAnotherSession = () => {
+    clearDemoDraft();
+    setFallbackDrafts(
+      createEmptyDemoDrafts(session.goals.map((goal) => goal.id)),
+    );
+    setSubmittedDrafts(null);
+    setSubmissionStored(false);
+    setMode("entry");
+  };
+
+  const storageMessage =
+    storedDraftSnapshot === DEMO_STORAGE_UNAVAILABLE
+      ? "Browser storage is unavailable; this draft will reset on refresh."
+      : "Draft saved in this browser on this device.";
 
   return (
     <>
@@ -111,21 +195,23 @@ export function ScoringSession({
         </div>
       </section>
 
-      <section className="goal-list" aria-label="Active goals">
-        {session.goals.map((goal, index) => {
-          const draft = drafts[goal.id];
-          const isComplete = isDemoGoalDraftComplete(
-            draft,
-            goal.strategy !== null,
-          );
-          const needsDetails = draft.score !== null && !isComplete;
-          const selectedRubricLevel =
-            typeof draft.score === "number"
-              ? rubric.find((level) => level.value === draft.score)
-              : null;
+      {mode === "entry" ? (
+        <>
+          <section className="goal-list" aria-label="Active goals">
+            {session.goals.map((goal, index) => {
+              const draft = drafts[goal.id];
+              const isComplete = isDemoGoalDraftComplete(
+                draft,
+                goal.strategy !== null,
+              );
+              const needsDetails = draft.score !== null && !isComplete;
+              const selectedRubricLevel =
+                typeof draft.score === "number"
+                  ? rubric.find((level) => level.value === draft.score)
+                  : null;
 
-          return (
-            <article
+              return (
+                <article
               className="goal-card"
               data-complete={isComplete}
               key={goal.id}
@@ -238,7 +324,7 @@ export function ScoringSession({
                           }
                           required
                         />
-                        <span>{noDataReasonLabels[reason]}</span>
+                        <span>{NO_DATA_REASON_LABELS[reason]}</span>
                       </label>
                     ))}
                   </div>
@@ -261,7 +347,7 @@ export function ScoringSession({
                           }
                           required
                         />
-                        <span>{fidelityLabels[status]}</span>
+                        <span>{FIDELITY_LABELS[status]}</span>
                       </label>
                     ))}
                   </div>
@@ -281,10 +367,77 @@ export function ScoringSession({
                   placeholder="Add something that may help interpret this observation."
                 />
               </div>
-            </article>
-          );
-        })}
-      </section>
+                </article>
+              );
+            })}
+          </section>
+
+          <section
+            className="session-actions"
+            aria-labelledby="draft-status-title"
+          >
+            <div>
+              <p id="draft-status-title">Device-local synthetic draft</p>
+              <span aria-live="polite">{storageMessage}</span>
+            </div>
+            <div className="session-action-control">
+              <span>
+                {allGoalsComplete
+                  ? "All goals are ready to review."
+                  : `${session.goals.length - completedCount} goal ${
+                      session.goals.length - completedCount === 1
+                        ? "needs"
+                        : "need"
+                    } a complete entry.`}
+              </span>
+              <button
+                type="button"
+                className="primary-button"
+                onClick={openReview}
+                disabled={!allGoalsComplete}
+              >
+                Review session
+              </button>
+            </div>
+          </section>
+        </>
+      ) : mode === "review" ? (
+        <SessionReview
+          session={session}
+          drafts={drafts}
+          rubric={rubric}
+          onBack={() => setMode("entry")}
+          onSubmit={submitSession}
+        />
+      ) : (
+        <section
+          className="submission-confirmation"
+          aria-labelledby="submission-confirmation-title"
+          role="status"
+        >
+          <span className="confirmation-mark" aria-hidden="true">
+            ✓
+          </span>
+          <p className="session-kicker">Synthetic submission complete</p>
+          <h2 id="submission-confirmation-title" tabIndex={-1}>
+            Session recorded for the demo
+          </h2>
+          <p>
+            {session.goals.length} goal entries were recorded for{" "}
+            {session.student.displayName}.
+            {submissionStored
+              ? " The fictional session is saved only in this browser for the upcoming history view."
+              : " Browser storage was unavailable, so this confirmation will not persist."}
+          </p>
+          <button
+            type="button"
+            className="primary-button"
+            onClick={startAnotherSession}
+          >
+            Start another synthetic session
+          </button>
+        </section>
+      )}
     </>
   );
 }
