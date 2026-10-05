@@ -383,6 +383,222 @@ main {
   text-align: center;
 }
 
+.dashboard-shell {
+  width: min(980px, calc(100% - 32px));
+  margin: 0 auto;
+  padding-bottom: 64px;
+}
+
+.dashboard-header {
+  min-height: 84px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+  border-bottom: 1px solid rgb(23 51 45 / 14%);
+}
+
+.dashboard-account {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.dashboard-account > span {
+  display: grid;
+  justify-items: end;
+  gap: 2px;
+}
+
+.dashboard-account strong {
+  font-size: 12px;
+}
+
+.dashboard-account small {
+  color: var(--muted);
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+}
+
+.dashboard-account button {
+  min-height: 38px;
+  padding: 0 12px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: var(--surface);
+  color: var(--ink);
+  cursor: pointer;
+  font: inherit;
+  font-size: 11px;
+  font-weight: 800;
+}
+
+.roster-heading {
+  padding: 58px 0 30px;
+  display: flex;
+  align-items: end;
+  justify-content: space-between;
+  gap: 32px;
+}
+
+.roster-heading h1 {
+  margin: 0;
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: clamp(48px, 8vw, 72px);
+  font-weight: 500;
+  letter-spacing: -0.055em;
+  line-height: 0.96;
+}
+
+.roster-heading > div:first-child > p:last-child {
+  max-width: 580px;
+  margin: 16px 0 0;
+  color: var(--muted);
+  font-size: 14px;
+  line-height: 1.6;
+}
+
+.roster-count {
+  min-width: 130px;
+  padding: 16px;
+  display: grid;
+  justify-items: center;
+  gap: 4px;
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  background: var(--surface);
+}
+
+.roster-count strong {
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: 32px;
+  font-weight: 500;
+}
+
+.roster-count span {
+  color: var(--muted);
+  font-size: 10px;
+  font-weight: 900;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.student-roster {
+  margin: 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 14px;
+  list-style: none;
+}
+
+.student-roster-card {
+  min-height: 180px;
+  padding: 22px;
+  display: grid;
+  grid-template-columns: 48px minmax(0, 1fr);
+  align-content: space-between;
+  align-items: center;
+  gap: 16px;
+  border: 1px solid var(--line);
+  border-radius: 20px 20px 20px 7px;
+  background: rgb(255 253 248 / 88%);
+  box-shadow: 0 14px 38px rgb(23 51 45 / 7%);
+}
+
+.student-avatar {
+  width: 48px;
+  height: 48px;
+  display: grid;
+  place-items: center;
+  border-radius: 15px 15px 15px 5px;
+  background: var(--ink);
+  color: var(--surface);
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: 22px;
+}
+
+.student-roster-card h2,
+.student-roster-card p {
+  margin: 0;
+}
+
+.student-roster-card h2 {
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: 26px;
+  font-weight: 500;
+  letter-spacing: -0.035em;
+}
+
+.student-roster-card p {
+  margin-top: 4px;
+  color: var(--muted);
+  font-size: 11px;
+}
+
+.student-status {
+  grid-column: 1 / -1;
+  width: fit-content;
+  padding: 6px 9px;
+  border-radius: 999px;
+  background: #e4efe7;
+  color: #285d47;
+  font-size: 9px;
+  font-weight: 900;
+  letter-spacing: 0.08em;
+}
+
+.roster-empty {
+  padding: 56px 24px;
+  display: grid;
+  justify-items: center;
+  border: 1px dashed #abb7b1;
+  border-radius: 22px;
+  background: rgb(255 253 248 / 72%);
+  text-align: center;
+}
+
+.roster-empty > span {
+  width: 52px;
+  height: 52px;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  background: var(--accent-soft);
+  color: #6f2c1d;
+  font-weight: 900;
+}
+
+.roster-empty h2 {
+  margin: 18px 0 0;
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: 28px;
+  font-weight: 500;
+}
+
+.roster-empty p {
+  max-width: 520px;
+  margin: 10px 0 0;
+  color: var(--muted);
+  font-size: 13px;
+  line-height: 1.6;
+}
+
+.roster-source {
+  margin: 22px 0 0;
+  color: var(--muted);
+  font-size: 11px;
+  line-height: 1.5;
+  text-align: center;
+}
+
+.dashboard-account button:focus-visible {
+  outline: 3px solid var(--accent);
+  outline-offset: 3px;
+}
+
 .demo-shell {
   width: min(900px, calc(100% - 32px));
   margin: 0 auto;
@@ -1439,6 +1655,10 @@ main {
     gap: 48px;
   }
 
+  .student-roster {
+    grid-template-columns: 1fr 1fr;
+  }
+
   .hero h1 {
     font-size: clamp(48px, 15vw, 70px);
   }
@@ -1533,6 +1753,28 @@ main {
   .auth-shell {
     width: min(100% - 20px, 760px);
     padding-top: 20px;
+  }
+
+  .dashboard-shell {
+    width: min(100% - 20px, 980px);
+  }
+
+  .dashboard-account > span {
+    display: none;
+  }
+
+  .roster-heading {
+    align-items: stretch;
+    flex-direction: column;
+    padding-top: 40px;
+  }
+
+  .roster-count {
+    width: 100%;
+  }
+
+  .student-roster {
+    grid-template-columns: 1fr;
   }
 
   .auth-brand > span:last-child {

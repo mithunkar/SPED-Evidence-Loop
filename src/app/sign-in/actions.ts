@@ -17,5 +17,5 @@ export async function signInAsDevelopmentUser(formData: FormData) {
   }
 
   await setDevelopmentIdentity(parsed.data.userId);
-  redirect("/demo/session");
+  redirect("/dashboard");
 }

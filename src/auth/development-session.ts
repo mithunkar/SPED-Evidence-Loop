@@ -12,6 +12,7 @@ export type DevelopmentIdentity = {
   displayName: string;
   email: string;
   role: "TEACHER" | "ASSISTANT";
+  status: "ACTIVE";
 };
 
 const sessionPayloadSchema = z.object({
@@ -28,6 +29,7 @@ const developmentIdentities = syntheticSeedData.users.map(
     displayName: user.displayName,
     email: user.email,
     role: user.role,
+    status: user.status,
   }),
 );
 
