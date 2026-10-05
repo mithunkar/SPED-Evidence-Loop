@@ -29,6 +29,10 @@ cp .env.example .env
 docker compose up -d
 ```
 
+Replace `DEVELOPMENT_AUTH_SECRET` in `.env` with at least 32 random bytes before
+using the local role selector. The selector is disabled when `NODE_ENV` is
+`production` and is not a production authentication system.
+
 Database schemas live in `src/db/schema/`. Generate and apply migrations with:
 
 ```bash

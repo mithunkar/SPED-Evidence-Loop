@@ -32,6 +32,9 @@ export default function Home() {
               Open the scoring demo
               <span aria-hidden="true">→</span>
             </Link>
+            <Link className="secondary-link" href="/sign-in">
+              Development sign-in
+            </Link>
             <a className="secondary-link" href="#workflow">
               See the workflow
             </a>
