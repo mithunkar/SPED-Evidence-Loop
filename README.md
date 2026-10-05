@@ -34,7 +34,13 @@ Database schemas live in `src/db/schema/`. Generate and apply migrations with:
 ```bash
 npm run db:generate
 npm run db:migrate
+npm run db:seed
 ```
+
+The seed command is safe to rerun. It inserts or updates a clearly labeled
+synthetic classroom with a teacher, two assistants, three student aliases,
+representative goals, and one active strategy assignment. It must not be used
+to import real student information.
 
 ## Quality checks
 
