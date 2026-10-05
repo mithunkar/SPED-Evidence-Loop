@@ -72,7 +72,11 @@ export default async function DashboardPage() {
         <ul className="student-roster" aria-label="Authorized students">
           {roster.students.map((student) => (
             <li key={student.id}>
-              <article className="student-roster-card">
+              <Link
+                className="student-roster-card"
+                href={`/students/${student.id}/sessions/new`}
+                aria-label={`Start a synthetic session for ${student.displayName}`}
+              >
                 <span className="student-avatar" aria-hidden="true">
                   {student.displayName.slice(0, 1)}
                 </span>
@@ -81,7 +85,10 @@ export default async function DashboardPage() {
                   <p>Fictional classroom alias</p>
                 </div>
                 <span className="student-status">{student.status}</span>
-              </article>
+                <span className="student-card-action">
+                  Start session <span aria-hidden="true">→</span>
+                </span>
+              </Link>
             </li>
           ))}
         </ul>

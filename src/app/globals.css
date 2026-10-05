@@ -506,6 +506,21 @@ main {
   border-radius: 20px 20px 20px 7px;
   background: rgb(255 253 248 / 88%);
   box-shadow: 0 14px 38px rgb(23 51 45 / 7%);
+  transition:
+    border-color 140ms ease,
+    box-shadow 140ms ease,
+    transform 140ms ease;
+}
+
+.student-roster-card:hover {
+  border-color: #91a69c;
+  box-shadow: 0 18px 44px rgb(23 51 45 / 11%);
+  transform: translateY(-2px);
+}
+
+.student-roster-card:focus-visible {
+  outline: 3px solid var(--accent);
+  outline-offset: 3px;
 }
 
 .student-avatar {
@@ -539,7 +554,6 @@ main {
 }
 
 .student-status {
-  grid-column: 1 / -1;
   width: fit-content;
   padding: 6px 9px;
   border-radius: 999px;
@@ -548,6 +562,13 @@ main {
   font-size: 9px;
   font-weight: 900;
   letter-spacing: 0.08em;
+}
+
+.student-card-action {
+  justify-self: end;
+  color: var(--ink);
+  font-size: 11px;
+  font-weight: 900;
 }
 
 .roster-empty {
