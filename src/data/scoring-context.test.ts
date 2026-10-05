@@ -1,0 +1,49 @@
+import { describe, expect, it } from "vitest";
+
+import { getDevelopmentIdentity } from "@/auth/development-session";
+import { SYNTHETIC_SEED_IDS } from "@/db/seed-data";
+import { loadAuthorizedScoringContext } from "@/data/scoring-context";
+
+const identity = (userId: string) => {
+  const user = getDevelopmentIdentity(userId);
+  if (!user) {
+    throw new Error("Missing synthetic identity.");
+  }
+  return user;
+};
+
+describe("authorized scoring context", () => {
+  it("loads River's ordered goals and active strategy for the teacher", async () => {
+    const context = await loadAuthorizedScoringContext(
+      identity(SYNTHETIC_SEED_IDS.teacher),
+      SYNTHETIC_SEED_IDS.river,
+    );
+
+    expect(context?.student.displayName).toBe("River");
+    expect(context?.goals).toHaveLength(3);
+    expect(context?.goals[0].strategy).toMatchObject({
+      assignmentId: SYNTHETIC_SEED_IDS.visualCueAssignment,
+      id: SYNTHETIC_SEED_IDS.visualCueStrategy,
+      version: 1,
+    });
+  });
+
+  it("loads an assigned student's goals for the assistant", async () => {
+    const context = await loadAuthorizedScoringContext(
+      identity(SYNTHETIC_SEED_IDS.assignedAssistant),
+      SYNTHETIC_SEED_IDS.sage,
+    );
+
+    expect(context?.student.displayName).toBe("Sage");
+    expect(context?.goals).toHaveLength(2);
+  });
+
+  it("does not reveal an unassigned student", async () => {
+    const context = await loadAuthorizedScoringContext(
+      identity(SYNTHETIC_SEED_IDS.assignedAssistant),
+      SYNTHETIC_SEED_IDS.micah,
+    );
+
+    expect(context).toBeNull();
+  });
+});
