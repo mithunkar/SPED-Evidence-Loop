@@ -12,6 +12,7 @@ describe("database pool configuration", () => {
     expect(config.max).toBe(1);
     expect(config.allowExitOnIdle).toBe(false);
     expect(config.connectionString).toContain("sslmode=require");
+    expect(config.connectionString).toContain("uselibpqcompat=true");
   });
 
   it("keeps local development connections unencrypted", () => {
@@ -22,6 +23,7 @@ describe("database pool configuration", () => {
     expect(config.max).toBe(10);
     expect(config.allowExitOnIdle).toBe(true);
     expect(config.connectionString).not.toContain("sslmode");
+    expect(config.connectionString).not.toContain("uselibpqcompat");
   });
 
   it("preserves an explicit stricter SSL mode", () => {
@@ -32,5 +34,16 @@ describe("database pool configuration", () => {
 
     expect(config.connectionString).toContain("sslmode=verify-full");
     expect(config.connectionString).not.toContain("sslmode=require");
+    expect(config.connectionString).not.toContain("uselibpqcompat");
+  });
+
+  it("adds libpq compatibility to an explicit require mode", () => {
+    const config = createDatabasePoolConfig(
+      "postgresql://postgres.example:secret@db.example.com/postgres?sslmode=require",
+      { serverless: true },
+    );
+
+    expect(config.connectionString).toContain("sslmode=require");
+    expect(config.connectionString).toContain("uselibpqcompat=true");
   });
 });

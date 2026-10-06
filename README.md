@@ -56,10 +56,13 @@ Drizzle schema. Configure two server-only connection strings:
 - `DATABASE_MIGRATION_URL`: the direct or session-pooler URI used only by
   Drizzle migrations and the synthetic seed command.
 
-Add `sslmode=require` to hosted connection strings if it is not already present.
-The application automatically limits Vercel runtime instances to one database
-connection. Never expose either connection string with a `NEXT_PUBLIC_` prefix
-or commit credentials to Git.
+Add `sslmode=require&uselibpqcompat=true` to hosted connection strings if those
+parameters are not already present. The compatibility flag gives Node's `pg`
+driver the standard libpq meaning of `require`: encrypt the connection without
+requiring a locally installed CA certificate. Use `sslmode=verify-full` instead
+when the Supabase CA is installed and configured. The application automatically
+limits Vercel runtime instances to one database connection. Never expose either
+connection string with a `NEXT_PUBLIC_` prefix or commit credentials to Git.
 
 The role selector remains disabled in production unless
 `SYNTHETIC_DEMO_MODE=true` is configured alongside a strong

@@ -17,8 +17,21 @@ export function createDatabasePoolConfig(
   const url = new URL(connectionString);
   const isLocal = localDatabaseHosts.has(url.hostname);
 
-  if (!isLocal && !url.searchParams.has("sslmode")) {
-    url.searchParams.set("sslmode", "require");
+  if (!isLocal) {
+    if (!url.searchParams.has("sslmode")) {
+      url.searchParams.set("sslmode", "require");
+    }
+
+    // pg-connection-string otherwise treats sslmode=require like verify-full.
+    // Supabase's pooler certificate chain is encrypted but not locally trusted,
+    // so opt into libpq's standard `require` behavior unless the caller chose a
+    // stricter verification mode explicitly.
+    if (
+      url.searchParams.get("sslmode") === "require" &&
+      !url.searchParams.has("uselibpqcompat")
+    ) {
+      url.searchParams.set("uselibpqcompat", "true");
+    }
   }
 
   return {
