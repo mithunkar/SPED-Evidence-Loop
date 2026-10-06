@@ -33,12 +33,14 @@ export async function createStudentAction(
     };
   }
 
+  let studentId: string;
   try {
     const { db } = await import("@/db/client");
     const student = await createStudent(db, identity, parsed.data);
     if (!student) {
       throw new Error("Student creation returned no record.");
     }
+    studentId = student.id;
   } catch (error) {
     console.error("Student creation failed", error);
     return {
@@ -47,5 +49,5 @@ export async function createStudentAction(
     };
   }
 
-  redirect("/dashboard");
+  redirect(`/students/${studentId}/goals/new`);
 }

@@ -353,6 +353,45 @@ main {
   font-size: 16px;
 }
 
+.form-field textarea,
+.form-field select {
+  width: 100%;
+  padding: 12px 14px;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: var(--surface);
+  color: var(--ink);
+  font: inherit;
+  font-size: 15px;
+}
+
+.form-field textarea {
+  resize: vertical;
+  line-height: 1.5;
+}
+
+.form-field select {
+  min-height: 50px;
+}
+
+.form-field textarea:focus-visible,
+.form-field select:focus-visible {
+  border-color: var(--ink);
+  outline: 3px solid rgb(238 108 77 / 22%);
+  outline-offset: 2px;
+}
+
+.form-field textarea[aria-invalid="true"],
+.form-field select[aria-invalid="true"] {
+  border-color: #b5412d;
+}
+
+.form-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(140px, 0.45fr);
+  gap: 16px;
+}
+
 .form-field input:focus-visible {
   border-color: var(--ink);
   outline: 3px solid rgb(238 108 77 / 22%);
@@ -440,6 +479,10 @@ main {
   color: var(--muted);
   font-size: 13px;
   font-weight: 800;
+}
+
+.dashboard-header .back-link {
+  margin-bottom: 0;
 }
 
 .auth-current {
@@ -617,6 +660,116 @@ main {
 
 .add-student-link:focus-visible,
 .back-link:focus-visible {
+  outline: 3px solid var(--accent);
+  outline-offset: 3px;
+}
+
+.student-plan-heading {
+  padding: 52px 0 30px;
+  display: flex;
+  align-items: end;
+  justify-content: space-between;
+  gap: 28px;
+}
+
+.student-plan-heading h1 {
+  margin: 0;
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: clamp(46px, 8vw, 72px);
+  font-weight: 500;
+  letter-spacing: -0.05em;
+  line-height: 0.98;
+}
+
+.plan-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.primary-action,
+.secondary-action {
+  min-height: 46px;
+  padding: 0 16px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 12px;
+  font-size: 13px;
+  font-weight: 800;
+}
+
+.primary-action {
+  background: var(--ink);
+  color: var(--surface);
+}
+
+.secondary-action {
+  border: 1px solid var(--line);
+  background: var(--surface);
+}
+
+.plan-empty {
+  padding: 54px 24px;
+  border: 1px dashed #aab5ae;
+  border-radius: 18px;
+  text-align: center;
+}
+
+.plan-empty h2 {
+  margin: 0 0 14px;
+  font-size: 20px;
+}
+
+.plan-empty a {
+  color: var(--accent);
+  font-size: 13px;
+  font-weight: 800;
+}
+
+.goal-list {
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 12px;
+  list-style: none;
+}
+
+.goal-list-item {
+  padding: 22px;
+  display: flex;
+  align-items: start;
+  justify-content: space-between;
+  gap: 20px;
+  border: 1px solid var(--line);
+  border-radius: 17px;
+  background: var(--surface);
+}
+
+.goal-list-item > div > span {
+  color: var(--accent);
+  font-size: 10px;
+  font-weight: 900;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+}
+
+.goal-list-item h2 {
+  margin: 7px 0 8px;
+  font-size: 19px;
+}
+
+.goal-list-item p {
+  max-width: 660px;
+  margin: 0;
+  color: var(--muted);
+  font-size: 13px;
+  line-height: 1.55;
+}
+
+.primary-action:focus-visible,
+.secondary-action:focus-visible,
+.plan-empty a:focus-visible {
   outline: 3px solid var(--accent);
   outline-offset: 3px;
 }
@@ -1995,6 +2148,25 @@ main {
   .simple-hero {
     width: min(100% - 28px, 980px);
     padding-top: 72px;
+  }
+
+  .student-plan-heading {
+    align-items: stretch;
+    flex-direction: column;
+    padding-top: 40px;
+  }
+
+  .plan-actions {
+    width: 100%;
+  }
+
+  .primary-action,
+  .secondary-action {
+    flex: 1;
+  }
+
+  .form-row {
+    grid-template-columns: 1fr;
   }
 
   .student-roster {

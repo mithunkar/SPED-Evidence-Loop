@@ -59,6 +59,55 @@ export async function listAuthorizedStudents(
   return buildAuthorizedStudentListQuery(database, actor);
 }
 
+export function buildAuthorizedStudentQuery(
+  database: NodePgDatabase,
+  actor: AuthorizationActor,
+  studentId: string,
+) {
+  const baseConditions = [
+    eq(students.workspaceId, actor.workspaceId),
+    eq(students.id, studentId),
+  ];
+
+  if (actor.role === "TEACHER") {
+    return database
+      .select(studentSelection)
+      .from(students)
+      .where(and(...baseConditions))
+      .limit(1);
+  }
+
+  return database
+    .select(studentSelection)
+    .from(students)
+    .innerJoin(
+      userStudentAssignments,
+      and(
+        eq(userStudentAssignments.workspaceId, students.workspaceId),
+        eq(userStudentAssignments.studentId, students.id),
+      ),
+    )
+    .where(
+      and(
+        ...baseConditions,
+        eq(userStudentAssignments.userId, actor.id),
+      ),
+    )
+    .limit(1);
+}
+
+export async function findAuthorizedStudent(
+  database: NodePgDatabase,
+  actor: AuthorizationActor,
+  studentId: string,
+) {
+  if (actor.status !== "ACTIVE") {
+    return null;
+  }
+  const [student] = await buildAuthorizedStudentQuery(database, actor, studentId);
+  return student ?? null;
+}
+
 export function buildCreateStudentQuery(
   database: NodePgDatabase,
   actor: AuthorizationActor,

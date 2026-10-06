@@ -73,7 +73,7 @@ export default async function DashboardPage() {
             <li key={student.id}>
               <Link
                 className="student-roster-card"
-                href={`/students/${student.id}/sessions/new`}
+                href={`/students/${student.id}`}
                 aria-label={`Open ${student.displayName}`}
               >
                 <span className="student-avatar" aria-hidden="true">
@@ -84,7 +84,7 @@ export default async function DashboardPage() {
                 </div>
                 <span className="student-status">{student.status}</span>
                 <span className="student-card-action">
-                  Start session <span aria-hidden="true">→</span>
+                  Open <span aria-hidden="true">→</span>
                 </span>
               </Link>
             </li>

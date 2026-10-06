@@ -3,8 +3,11 @@ import { describe, expect, it } from "vitest";
 
 import type { AuthorizationActor } from "@/auth/authorization";
 import { SYNTHETIC_SEED_IDS } from "@/db/seed-data";
-import { buildAuthorizedStudentListQuery } from "@/db/queries/students";
-import { buildCreateStudentQuery } from "@/db/queries/students";
+import {
+  buildAuthorizedStudentListQuery,
+  buildAuthorizedStudentQuery,
+  buildCreateStudentQuery,
+} from "@/db/queries/students";
 
 const database = drizzle.mock();
 
@@ -41,6 +44,22 @@ describe("authorized student queries", () => {
       SYNTHETIC_SEED_IDS.workspace,
       SYNTHETIC_SEED_IDS.workspace,
       SYNTHETIC_SEED_IDS.assignedAssistant,
+    ]);
+  });
+
+  it("scopes a single student to the teacher's workspace", () => {
+    const query = buildAuthorizedStudentQuery(
+      database,
+      teacher,
+      SYNTHETIC_SEED_IDS.river,
+    ).toSQL();
+
+    expect(query.sql).toContain('"students"."workspace_id" = $1');
+    expect(query.sql).toContain('"students"."id" = $2');
+    expect(query.params).toEqual([
+      SYNTHETIC_SEED_IDS.workspace,
+      SYNTHETIC_SEED_IDS.river,
+      1,
     ]);
   });
 
