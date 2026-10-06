@@ -1,0 +1,129 @@
+import { and, eq } from "drizzle-orm";
+import type { NodePgDatabase } from "drizzle-orm/node-postgres";
+
+import {
+  AuthorizationError,
+  canManageClassroom,
+  type AuthorizationActor,
+  type StudentAuthorizationScope,
+} from "@/auth/authorization";
+import { goals, goalStrategyAssignments, strategies } from "@/db/schema";
+import type { AssignStrategyInput } from "@/domain/strategy";
+
+const goalForStrategySelection = {
+  id: goals.id,
+  workspaceId: goals.workspaceId,
+  studentId: goals.studentId,
+  title: goals.title,
+  status: goals.status,
+};
+
+type StrategyGoal = {
+  id: string;
+  workspaceId: string;
+  studentId: string;
+  title: string;
+  status: "DRAFT" | "ACTIVE" | "PAUSED" | "ARCHIVED";
+};
+
+export function buildAuthorizedGoalQuery(
+  database: NodePgDatabase,
+  actor: AuthorizationActor,
+  student: StudentAuthorizationScope,
+  goalId: string,
+) {
+  if (!canManageClassroom(actor) || actor.workspaceId !== student.workspaceId) {
+    throw new AuthorizationError();
+  }
+
+  return database
+    .select(goalForStrategySelection)
+    .from(goals)
+    .where(
+      and(
+        eq(goals.workspaceId, actor.workspaceId),
+        eq(goals.studentId, student.id),
+        eq(goals.id, goalId),
+      ),
+    )
+    .limit(1);
+}
+
+export async function findAuthorizedGoal(
+  database: NodePgDatabase,
+  actor: AuthorizationActor,
+  student: StudentAuthorizationScope,
+  goalId: string,
+) {
+  const [goal] = await buildAuthorizedGoalQuery(database, actor, student, goalId);
+  return goal ?? null;
+}
+
+export async function createAndAssignStrategy(
+  database: NodePgDatabase,
+  actor: AuthorizationActor,
+  student: StudentAuthorizationScope,
+  goal: StrategyGoal,
+  input: AssignStrategyInput,
+  startsOn: string,
+) {
+  if (
+    !canManageClassroom(actor) ||
+    actor.workspaceId !== student.workspaceId ||
+    goal.workspaceId !== actor.workspaceId ||
+    goal.studentId !== student.id
+  ) {
+    throw new AuthorizationError();
+  }
+
+  return database.transaction(async (transaction) => {
+    await transaction
+      .update(goalStrategyAssignments)
+      .set({
+        status: "ENDED",
+        endsOn: startsOn,
+        plannedReviewOn: null,
+        updatedAt: new Date(),
+      })
+      .where(
+        and(
+          eq(goalStrategyAssignments.workspaceId, actor.workspaceId),
+          eq(goalStrategyAssignments.goalId, goal.id),
+          eq(goalStrategyAssignments.status, "ACTIVE"),
+        ),
+      );
+
+    const [strategy] = await transaction
+      .insert(strategies)
+      .values({
+        workspaceId: actor.workspaceId,
+        name: input.name,
+        purpose: `Support ${goal.title}`,
+        instructions: input.instructions,
+        fidelityPrompt: input.fidelityPrompt,
+        version: 1,
+        status: "ACTIVE",
+        createdByUserId: actor.id,
+      })
+      .returning({ id: strategies.id, version: strategies.version });
+
+    if (!strategy) {
+      throw new Error("Strategy creation returned no record.");
+    }
+
+    const [assignment] = await transaction
+      .insert(goalStrategyAssignments)
+      .values({
+        workspaceId: actor.workspaceId,
+        goalId: goal.id,
+        strategyId: strategy.id,
+        strategyVersion: strategy.version,
+        startsOn,
+        reason: `Configured for ${goal.title}`,
+        status: "ACTIVE",
+      })
+      .returning({ id: goalStrategyAssignments.id });
+
+    return assignment ?? null;
+  });
+}

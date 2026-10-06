@@ -767,6 +767,44 @@ main {
   line-height: 1.55;
 }
 
+.goal-item-actions {
+  min-width: 120px;
+  display: grid;
+  justify-items: end;
+  gap: 14px;
+}
+
+.goal-item-actions a {
+  color: var(--accent);
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.goal-strategy {
+  margin-top: 16px;
+  padding: 12px 14px;
+  display: grid;
+  gap: 4px;
+  border-left: 3px solid var(--sage);
+  border-radius: 0 9px 9px 0;
+  background: #edf3ee;
+}
+
+.goal-strategy strong {
+  font-size: 12px;
+}
+
+.goal-strategy span {
+  color: var(--muted);
+  font-size: 12px;
+  line-height: 1.45;
+}
+
+.goal-item-actions a:focus-visible {
+  outline: 3px solid var(--accent);
+  outline-offset: 3px;
+}
+
 .primary-action:focus-visible,
 .secondary-action:focus-visible,
 .plan-empty a:focus-visible {
@@ -2167,6 +2205,18 @@ main {
 
   .form-row {
     grid-template-columns: 1fr;
+  }
+
+  .goal-list-item {
+    flex-direction: column;
+  }
+
+  .goal-item-actions {
+    width: 100%;
+    grid-auto-flow: column;
+    align-items: center;
+    justify-content: space-between;
+    justify-items: start;
   }
 
   .student-roster {

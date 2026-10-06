@@ -76,8 +76,21 @@ export default async function StudentPage({
                 <span>{goal.domain}</span>
                 <h2>{goal.title}</h2>
                 <p>{goal.objectiveText}</p>
+                {goal.strategyName ? (
+                  <div className="goal-strategy">
+                    <strong>{goal.strategyName}</strong>
+                    <span>{goal.strategyInstructions}</span>
+                  </div>
+                ) : null}
               </div>
-              <span className="student-status">{goal.status}</span>
+              <div className="goal-item-actions">
+                <span className="student-status">{goal.status}</span>
+                <Link
+                  href={`/students/${studentId}/goals/${goal.id}/strategy/new`}
+                >
+                  {goal.strategyName ? "Change strategy" : "Add strategy"}
+                </Link>
+              </div>
             </li>
           ))}
         </ul>

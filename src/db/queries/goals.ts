@@ -7,7 +7,7 @@ import {
   type AuthorizationActor,
   type StudentAuthorizationScope,
 } from "@/auth/authorization";
-import { goals } from "@/db/schema";
+import { goals, goalStrategyAssignments, strategies } from "@/db/schema";
 import type { CreateGoalInput } from "@/domain/goal";
 
 const goalSelection = {
@@ -19,6 +19,8 @@ const goalSelection = {
   expectedFrequency: goals.expectedFrequency,
   status: goals.status,
   position: goals.position,
+  strategyName: strategies.name,
+  strategyInstructions: strategies.instructions,
 };
 
 export function buildStudentGoalListQuery(
@@ -33,6 +35,23 @@ export function buildStudentGoalListQuery(
   return database
     .select(goalSelection)
     .from(goals)
+    .leftJoin(
+      goalStrategyAssignments,
+      and(
+        eq(goalStrategyAssignments.workspaceId, goals.workspaceId),
+        eq(goalStrategyAssignments.goalId, goals.id),
+        eq(goalStrategyAssignments.status, "ACTIVE"),
+      ),
+    )
+    .leftJoin(
+      strategies,
+      and(
+        eq(strategies.workspaceId, goalStrategyAssignments.workspaceId),
+        eq(strategies.id, goalStrategyAssignments.strategyId),
+        eq(strategies.version, goalStrategyAssignments.strategyVersion),
+        eq(strategies.status, "ACTIVE"),
+      ),
+    )
     .where(
       and(
         eq(goals.workspaceId, actor.workspaceId),
