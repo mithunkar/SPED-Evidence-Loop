@@ -10,6 +10,9 @@ export default defineConfig({
   schema: "./src/db/schema/index.ts",
   out: "./drizzle",
   dbCredentials: {
-    url: process.env.DATABASE_URL ?? localDatabaseUrl,
+    url:
+      process.env.DATABASE_MIGRATION_URL ??
+      process.env.DATABASE_URL ??
+      localDatabaseUrl,
   },
 });

@@ -46,6 +46,25 @@ synthetic classroom with a teacher, two assistants, three student aliases,
 representative goals, and one active strategy assignment. It must not be used
 to import real student information.
 
+### Supabase and hosted environments
+
+Supabase can provide the managed PostgreSQL database without changing the
+Drizzle schema. Configure two server-only connection strings:
+
+- `DATABASE_URL`: the Supabase transaction-pooler URI (port `6543`) used by the
+  deployed application.
+- `DATABASE_MIGRATION_URL`: the direct or session-pooler URI used only by
+  Drizzle migrations and the synthetic seed command.
+
+Add `sslmode=require` to hosted connection strings if it is not already present.
+The application automatically limits Vercel runtime instances to one database
+connection. Never expose either connection string with a `NEXT_PUBLIC_` prefix
+or commit credentials to Git.
+
+The current role selector is development-only. A hosted interactive demo still
+requires an explicitly synthetic production demo mode or real authentication;
+do not enable it for real student information.
+
 ## Quality checks
 
 ```bash

@@ -1,6 +1,8 @@
 import { drizzle } from "drizzle-orm/node-postgres";
 import { Pool } from "pg";
 
+import { createDatabasePoolConfig } from "@/db/connection";
+
 const connectionString = process.env.DATABASE_URL;
 
 if (!connectionString) {
@@ -12,7 +14,12 @@ const globalForDatabase = globalThis as unknown as {
 };
 
 export const databasePool =
-  globalForDatabase.pool ?? new Pool({ connectionString });
+  globalForDatabase.pool ??
+  new Pool(
+    createDatabasePoolConfig(connectionString, {
+      serverless: process.env.VERCEL === "1",
+    }),
+  );
 
 if (process.env.NODE_ENV !== "production") {
   globalForDatabase.pool = databasePool;
