@@ -5,13 +5,12 @@ import {
   getCurrentApplicationIdentity,
   getVerifiedSupabaseUser,
 } from "@/auth/application-session";
-
-import { signInWithPassword } from "./actions";
-import { AuthForm } from "./auth-form";
+import { signUpWithPassword } from "@/app/sign-in/actions";
+import { AuthForm } from "@/app/sign-in/auth-form";
 
 export const dynamic = "force-dynamic";
 
-export default async function SignInPage() {
+export default async function SignUpPage() {
   const [identity, supabaseUser] = await Promise.all([
     getCurrentApplicationIdentity(),
     getVerifiedSupabaseUser(),
@@ -33,11 +32,11 @@ export default async function SignInPage() {
         <span>Evidence Loop</span>
       </Link>
 
-      <section className="auth-surface" aria-labelledby="sign-in-title">
+      <section className="auth-surface" aria-labelledby="sign-up-title">
         <div className="auth-heading">
-          <h1 id="sign-in-title">Welcome back</h1>
+          <h1 id="sign-up-title">Create your account</h1>
         </div>
-        <AuthForm action={signInWithPassword} mode="sign-in" />
+        <AuthForm action={signUpWithPassword} mode="sign-up" />
       </section>
     </main>
   );

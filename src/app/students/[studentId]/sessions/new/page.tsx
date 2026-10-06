@@ -2,7 +2,7 @@ import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
 
 import { ScoringSession } from "@/app/demo/session/scoring-session";
-import { getCurrentDevelopmentIdentity } from "@/auth/server-session";
+import { getCurrentApplicationIdentity } from "@/auth/application-session";
 import { loadAuthorizedScoringContext } from "@/data/scoring-context";
 import {
   DEFAULT_RUBRIC,
@@ -19,7 +19,7 @@ export default async function NewStudentSessionPage({
 }: {
   params: Promise<{ studentId: string }>;
 }) {
-  const identity = await getCurrentDevelopmentIdentity();
+  const identity = await getCurrentApplicationIdentity();
   if (!identity) {
     redirect("/sign-in");
   }
@@ -34,13 +34,6 @@ export default async function NewStudentSessionPage({
 
   return (
     <main className="demo-shell">
-      <div className="demo-banner" role="note">
-        <span className="demo-banner-dot" aria-hidden="true" />
-        {context.source === "DATABASE"
-          ? "Protected synthetic workflow — submissions save to the demo database"
-          : "Protected synthetic workflow — submissions remain device-local"}
-      </div>
-
       <header className="demo-header">
         <Link className="demo-brand" href="/dashboard" aria-label="Student roster">
           <span className="brand-mark" aria-hidden="true">
@@ -67,11 +60,6 @@ export default async function NewStudentSessionPage({
       />
 
       <footer className="demo-footer">
-        <p>
-          {context.source === "DATABASE"
-            ? "Goals and synthetic submissions use the configured PostgreSQL database."
-            : "Goals loaded from the authorization-tested synthetic fixture."}
-        </p>
         <Link href="/dashboard">Return to your students</Link>
       </footer>
     </main>

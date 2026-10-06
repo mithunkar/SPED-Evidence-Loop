@@ -1,16 +1,22 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
 
-import { getCurrentDevelopmentIdentity } from "@/auth/server-session";
+import {
+  getCurrentApplicationIdentity,
+  getVerifiedSupabaseUser,
+} from "@/auth/application-session";
 import { loadAuthorizedStudentRoster } from "@/data/student-roster";
 
-import { signOutDevelopmentUser } from "./actions";
+import { signOutUser } from "./actions";
 
 export const dynamic = "force-dynamic";
 
 export default async function DashboardPage() {
-  const identity = await getCurrentDevelopmentIdentity();
+  const identity = await getCurrentApplicationIdentity();
   if (!identity) {
+    if (await getVerifiedSupabaseUser()) {
+      redirect("/onboarding");
+    }
     redirect("/sign-in");
   }
 
@@ -18,13 +24,8 @@ export default async function DashboardPage() {
 
   return (
     <main className="dashboard-shell">
-      <div className="demo-banner" role="note">
-        <span className="demo-banner-dot" aria-hidden="true" />
-        Synthetic development workspace — fictional aliases only
-      </div>
-
       <header className="dashboard-header">
-        <Link className="demo-brand" href="/" aria-label="Project overview">
+        <Link className="demo-brand" href="/dashboard" aria-label="Student roster">
           <span className="brand-mark" aria-hidden="true">
             EL
           </span>
@@ -35,7 +36,7 @@ export default async function DashboardPage() {
             <strong>{identity.displayName}</strong>
             <small>{identity.role.toLowerCase()}</small>
           </span>
-          <form action={signOutDevelopmentUser}>
+          <form action={signOutUser}>
             <button type="submit">Sign out</button>
           </form>
         </div>
@@ -43,18 +44,12 @@ export default async function DashboardPage() {
 
       <section className="roster-heading" aria-labelledby="roster-title">
         <div>
-          <p className="session-kicker">Authorized student roster</p>
           <h1 id="roster-title">Your students</h1>
-          <p>
-            {identity.role === "TEACHER"
-              ? "Teachers can view every student in their classroom workspace."
-              : "Assistants see only students explicitly assigned to them."}
-          </p>
         </div>
         <div className="roster-count">
           <strong>{roster.students.length}</strong>
           <span>
-            {roster.students.length === 1 ? "student" : "students"} visible
+            {roster.students.length === 1 ? "student" : "students"}
           </span>
         </div>
       </section>
@@ -63,10 +58,7 @@ export default async function DashboardPage() {
         <section className="roster-empty" aria-labelledby="roster-empty-title">
           <span aria-hidden="true">0</span>
           <h2 id="roster-empty-title">No students assigned</h2>
-          <p>
-            This synthetic assistant account has no student assignments. A
-            teacher must assign access before student records become visible.
-          </p>
+          <p>Add your first student to begin collecting data.</p>
         </section>
       ) : (
         <ul className="student-roster" aria-label="Authorized students">
@@ -75,14 +67,13 @@ export default async function DashboardPage() {
               <Link
                 className="student-roster-card"
                 href={`/students/${student.id}/sessions/new`}
-                aria-label={`Start a synthetic session for ${student.displayName}`}
+                aria-label={`Open ${student.displayName}`}
               >
                 <span className="student-avatar" aria-hidden="true">
                   {student.displayName.slice(0, 1)}
                 </span>
                 <div>
                   <h2>{student.displayName}</h2>
-                  <p>Fictional classroom alias</p>
                 </div>
                 <span className="student-status">{student.status}</span>
                 <span className="student-card-action">
@@ -93,12 +84,6 @@ export default async function DashboardPage() {
           ))}
         </ul>
       )}
-
-      <p className="roster-source">
-        {roster.source === "DATABASE"
-          ? "Loaded from the local development database."
-          : "Database not configured; showing the authorization-tested synthetic seed fixture."}
-      </p>
     </main>
   );
 }

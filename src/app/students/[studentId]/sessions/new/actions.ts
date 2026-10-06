@@ -1,6 +1,6 @@
 "use server";
 
-import { getCurrentDevelopmentIdentity } from "@/auth/server-session";
+import { getCurrentApplicationIdentity } from "@/auth/application-session";
 import { loadAuthorizedScoringContext } from "@/data/scoring-context";
 import { persistAuthorizedSession } from "@/data/session-submission";
 import type { SessionSubmissionInput } from "@/domain/session-submission";
@@ -17,7 +17,7 @@ export async function submitAuthorizedScoringSession(
   studentId: string,
   input: SessionSubmissionInput,
 ): Promise<ScoringSubmissionResult> {
-  const identity = await getCurrentDevelopmentIdentity();
+  const identity = await getCurrentApplicationIdentity();
   if (!identity) {
     return { status: "error", message: "Your session has expired. Sign in again." };
   }
@@ -25,7 +25,7 @@ export async function submitAuthorizedScoringSession(
   if (!process.env.DATABASE_URL) {
     return {
       status: "error",
-      message: "The hosted demo database is not configured.",
+      message: "The database is not configured.",
     };
   }
 
@@ -50,7 +50,7 @@ export async function submitAuthorizedScoringSession(
       })),
     };
   } catch (error) {
-    console.error("Synthetic scoring submission failed", error);
+    console.error("Scoring submission failed", error);
     return {
       status: "error",
       message:
