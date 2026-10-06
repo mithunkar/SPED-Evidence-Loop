@@ -19,7 +19,6 @@ type SessionReviewProps = {
   onSubmit: () => void;
   isSubmitting?: boolean;
   submitError?: string | null;
-  savesToDatabase?: boolean;
 };
 
 export function SessionReview({
@@ -30,21 +29,15 @@ export function SessionReview({
   onSubmit,
   isSubmitting = false,
   submitError = null,
-  savesToDatabase = false,
 }: SessionReviewProps) {
   return (
     <section className="review-surface" aria-labelledby="session-review-title">
       <div className="review-heading">
         <p className="session-kicker">Check before submitting</p>
         <h2 id="session-review-title" tabIndex={-1}>
-          Review synthetic session
+          Review session
         </h2>
-        <p>
-          Confirm each outcome and strategy-use entry. This synthetic submission
-          {savesToDatabase
-            ? " will be saved to the hosted demo database."
-            : " stays in this browser and does not represent a production student record."}
-        </p>
+        <p>Confirm each outcome and strategy-use entry.</p>
       </div>
 
       <div className="review-list">
@@ -109,7 +102,7 @@ export function SessionReview({
           onClick={onSubmit}
           disabled={isSubmitting}
         >
-          {isSubmitting ? "Saving…" : "Submit synthetic session"}
+          {isSubmitting ? "Saving…" : "Submit session"}
         </button>
       </div>
       {submitError ? (

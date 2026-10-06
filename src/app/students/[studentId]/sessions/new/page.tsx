@@ -26,7 +26,7 @@ export default async function NewStudentSessionPage({
 
   const { studentId } = await params;
   const context = await loadAuthorizedScoringContext(identity, studentId);
-  if (!context) {
+  if (!context || context.source !== "DATABASE") {
     notFound();
   }
 
@@ -54,9 +54,7 @@ export default async function NewStudentSessionPage({
         rubric={DEFAULT_RUBRIC}
         noDataReasons={NO_DATA_REASONS}
         fidelityStatuses={STRATEGY_FIDELITY_STATUSES}
-        persistSubmission={
-          context.source === "DATABASE" ? submitSession : undefined
-        }
+        persistSubmission={submitSession}
       />
 
       <footer className="demo-footer">

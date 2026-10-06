@@ -7,7 +7,6 @@ import {
   clearDemoDraft,
   DEMO_STORAGE_UNAVAILABLE,
   getDemoDraftSnapshot,
-  storeDemoSubmission,
   subscribeToDemoDraft,
   writeDemoDraftSnapshot,
 } from "@/demo/demo-browser-store";
@@ -49,7 +48,7 @@ type ScoringSessionProps = {
   rubric: readonly RubricLevel[];
   noDataReasons: readonly NoDataReason[];
   fidelityStatuses: readonly StrategyFidelityStatus[];
-  persistSubmission?: (
+  persistSubmission: (
     input: SessionSubmissionInput,
   ) => Promise<ScoringSubmissionResult>;
 };
@@ -82,7 +81,6 @@ export function ScoringSession({
       ? fallbackDrafts
       : restoredDrafts;
   const [mode, setMode] = useState<SessionMode>("entry");
-  const [submissionStored, setSubmissionStored] = useState(false);
   const [submittedDrafts, setSubmittedDrafts] =
     useState<DemoDrafts | null>(null);
   const [databaseSubmission, setDatabaseSubmission] = useState<
@@ -161,50 +159,45 @@ export function ScoringSession({
     setIsSubmitting(true);
 
     try {
-      if (persistSubmission) {
-        const observations: SessionSubmissionInput["observations"] =
-          submission.observations.map((observation) => {
-            const context = {
-              goalId: observation.goalId,
-              fidelityStatus: observation.fidelityStatus,
-              note: observation.note.trim() || null,
-            };
+      const observations: SessionSubmissionInput["observations"] =
+        submission.observations.map((observation) => {
+          const context = {
+            goalId: observation.goalId,
+            fidelityStatus: observation.fidelityStatus,
+            note: observation.note.trim() || null,
+          };
 
-            if (observation.score === null) {
-              if (!observation.noDataReason) {
-                throw new Error("A no-data observation requires a reason.");
-              }
-
-              return {
-                ...context,
-                score: null,
-                noDataReason: observation.noDataReason,
-              };
+          if (observation.score === null) {
+            if (!observation.noDataReason) {
+              throw new Error("A no-data observation requires a reason.");
             }
 
             return {
               ...context,
-              score: observation.score,
-              noDataReason: null,
+              score: null,
+              noDataReason: observation.noDataReason,
             };
-          });
-        const input: SessionSubmissionInput = {
-          occurredAt: submission.submittedAt,
-          contextTags: [],
-          note: null,
-          observations,
-        };
-        const result = await persistSubmission(input);
-        if (result.status === "error") {
-          setSubmitError(result.message);
-          return;
-        }
+          }
 
-        setDatabaseSubmission(result);
-        setSubmissionStored(false);
-      } else {
-        setSubmissionStored(storeDemoSubmission(submission));
+          return {
+            ...context,
+            score: observation.score,
+            noDataReason: null,
+          };
+        });
+      const input: SessionSubmissionInput = {
+        occurredAt: submission.submittedAt,
+        contextTags: [],
+        note: null,
+        observations,
+      };
+      const result = await persistSubmission(input);
+      if (result.status === "error") {
+        setSubmitError(result.message);
+        return;
       }
+
+      setDatabaseSubmission(result);
 
       setSubmittedDrafts(drafts);
       setMode("submitted");
@@ -223,7 +216,6 @@ export function ScoringSession({
       createEmptyDemoDrafts(session.goals.map((goal) => goal.id)),
     );
     setSubmittedDrafts(null);
-    setSubmissionStored(false);
     setDatabaseSubmission(undefined);
     setSubmitError(null);
     setMode("entry");
@@ -446,7 +438,7 @@ export function ScoringSession({
             aria-labelledby="draft-status-title"
           >
             <div>
-              <p id="draft-status-title">Device-local synthetic draft</p>
+              <p id="draft-status-title">Draft</p>
               <span aria-live="polite">{storageMessage}</span>
             </div>
             <div className="session-action-control">
@@ -479,7 +471,6 @@ export function ScoringSession({
           onSubmit={() => void submitSession()}
           isSubmitting={isSubmitting}
           submitError={submitError}
-          savesToDatabase={Boolean(persistSubmission)}
         />
       ) : (
         <section
@@ -490,18 +481,13 @@ export function ScoringSession({
           <span className="confirmation-mark" aria-hidden="true">
             ✓
           </span>
-          <p className="session-kicker">Synthetic submission complete</p>
+          <p className="session-kicker">Submission complete</p>
           <h2 id="submission-confirmation-title" tabIndex={-1}>
-            Session recorded for the demo
+            Session recorded
           </h2>
           <p>
             {session.goals.length} goal entries were recorded for{" "}
             {session.student.displayName}.
-            {databaseSubmission
-              ? " The fictional session was saved to the hosted demo database."
-              : submissionStored
-              ? " The fictional session is saved only in this browser for the upcoming history view."
-              : " Browser storage was unavailable, so this confirmation will not persist."}
           </p>
           {databaseSubmission?.potentialDuplicates.length ? (
             <p className="duplicate-warning" role="note">
@@ -516,13 +502,9 @@ export function ScoringSession({
             className="primary-button"
             onClick={startAnotherSession}
           >
-            Start another synthetic session
+            Record another session
           </button>
-          {submissionStored ? (
-            <Link className="submission-history-link" href="/demo/history">
-              Review submitted history
-            </Link>
-          ) : databaseSubmission ? (
+          {databaseSubmission ? (
             <Link className="submission-history-link" href="/dashboard">
               Return to your students
             </Link>
