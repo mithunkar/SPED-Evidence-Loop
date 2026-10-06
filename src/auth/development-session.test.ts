@@ -1,8 +1,9 @@
-import { describe, expect, it } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
 
 import {
   createDevelopmentSessionToken,
   getDevelopmentIdentity,
+  isSyntheticIdentityAccessEnabled,
   listDevelopmentIdentities,
   verifyDevelopmentSessionToken,
 } from "@/auth/development-session";
@@ -12,6 +13,10 @@ const secret = "synthetic-development-secret-with-32-bytes";
 const issuedAt = new Date("2026-10-05T16:00:00.000Z");
 
 describe("development session authentication", () => {
+  afterEach(() => {
+    vi.unstubAllEnvs();
+  });
+
   it("lists only the three active synthetic seed identities", () => {
     expect(listDevelopmentIdentities()).toHaveLength(3);
     expect(
@@ -72,5 +77,24 @@ describe("development session authentication", () => {
         issuedAt,
       ),
     ).toThrow("at least 32 bytes");
+  });
+
+  it("requires an explicit flag for synthetic identity access in production", () => {
+    expect(isSyntheticIdentityAccessEnabled("production", undefined)).toBe(
+      false,
+    );
+    expect(isSyntheticIdentityAccessEnabled("production", "false")).toBe(
+      false,
+    );
+    expect(isSyntheticIdentityAccessEnabled("production", "true")).toBe(true);
+
+    vi.stubEnv("NODE_ENV", "production");
+    vi.stubEnv("SYNTHETIC_DEMO_MODE", "false");
+    expect(() => listDevelopmentIdentities()).toThrow(
+      "Synthetic identity access is disabled",
+    );
+
+    vi.stubEnv("SYNTHETIC_DEMO_MODE", "true");
+    expect(listDevelopmentIdentities()).toHaveLength(3);
   });
 });

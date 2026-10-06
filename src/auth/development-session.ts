@@ -33,9 +33,18 @@ const developmentIdentities = syntheticSeedData.users.map(
   }),
 );
 
-const assertDevelopmentOnly = () => {
-  if (process.env.NODE_ENV === "production") {
-    throw new Error("Development authentication is disabled in production.");
+export function isSyntheticIdentityAccessEnabled(
+  environment = process.env.NODE_ENV,
+  hostedDemoMode = process.env.SYNTHETIC_DEMO_MODE,
+) {
+  return environment !== "production" || hostedDemoMode === "true";
+}
+
+const assertSyntheticIdentityAccess = () => {
+  if (!isSyntheticIdentityAccessEnabled()) {
+    throw new Error(
+      "Synthetic identity access is disabled outside development unless SYNTHETIC_DEMO_MODE=true.",
+    );
   }
 };
 
@@ -51,12 +60,12 @@ const sign = (payload: string, secret: string) =>
   createHmac("sha256", secret).update(payload).digest("base64url");
 
 export function listDevelopmentIdentities() {
-  assertDevelopmentOnly();
+  assertSyntheticIdentityAccess();
   return developmentIdentities;
 }
 
 export function getDevelopmentIdentity(userId: string) {
-  assertDevelopmentOnly();
+  assertSyntheticIdentityAccess();
   return developmentIdentities.find((identity) => identity.id === userId) ?? null;
 }
 
@@ -65,7 +74,7 @@ export function createDevelopmentSessionToken(
   secret: string,
   now = new Date(),
 ) {
-  assertDevelopmentOnly();
+  assertSyntheticIdentityAccess();
   assertSecret(secret);
 
   if (!getDevelopmentIdentity(userId)) {
@@ -91,7 +100,7 @@ export function verifyDevelopmentSessionToken(
   secret: string,
   now = new Date(),
 ) {
-  assertDevelopmentOnly();
+  assertSyntheticIdentityAccess();
   assertSecret(secret);
 
   const [payload, suppliedSignature, extra] = token.split(".");

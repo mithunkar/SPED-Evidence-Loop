@@ -14,7 +14,7 @@ const getSecret = () => {
   const secret = process.env.DEVELOPMENT_AUTH_SECRET;
   if (!secret) {
     throw new Error(
-      "DEVELOPMENT_AUTH_SECRET is required for development sign-in.",
+      "DEVELOPMENT_AUTH_SECRET is required for synthetic role access.",
     );
   }
   return secret;
@@ -36,7 +36,7 @@ export async function setDevelopmentIdentity(userId: string) {
     maxAge: DEVELOPMENT_SESSION_TTL_SECONDS,
     path: "/",
     sameSite: "lax",
-    secure: false,
+    secure: process.env.NODE_ENV === "production",
   });
 }
 

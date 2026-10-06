@@ -1,7 +1,10 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 
-import { listDevelopmentIdentities } from "@/auth/development-session";
+import {
+  isSyntheticIdentityAccessEnabled,
+  listDevelopmentIdentities,
+} from "@/auth/development-session";
 import { getCurrentDevelopmentIdentity } from "@/auth/server-session";
 
 import { signInAsDevelopmentUser } from "./actions";
@@ -9,12 +12,13 @@ import { signInAsDevelopmentUser } from "./actions";
 export const dynamic = "force-dynamic";
 
 export default async function SignInPage() {
-  if (process.env.NODE_ENV === "production") {
+  if (!isSyntheticIdentityAccessEnabled()) {
     notFound();
   }
 
   const identities = listDevelopmentIdentities();
   const currentIdentity = await getCurrentDevelopmentIdentity();
+  const isHostedDemo = process.env.NODE_ENV === "production";
 
   return (
     <main className="auth-shell">
@@ -27,11 +31,13 @@ export default async function SignInPage() {
 
       <section className="auth-surface" aria-labelledby="sign-in-title">
         <div className="auth-heading">
-          <p className="eyebrow">Local development access</p>
+          <p className="eyebrow">
+            {isHostedDemo ? "Hosted synthetic demo" : "Local development access"}
+          </p>
           <h1 id="sign-in-title">Choose a synthetic staff role</h1>
           <p>
-            This temporary sign-in exists only for testing authorization with
-            fictional classroom data. It is disabled in production.
+            This temporary role selector exists only for testing authorization
+            with fictional classroom data.
           </p>
         </div>
 
@@ -73,8 +79,8 @@ export default async function SignInPage() {
         </div>
 
         <p className="auth-warning">
-          Development convenience only. This is not the production
-          authentication or authorization model.
+          Synthetic demonstration only. This is not authentication for real
+          student information.
         </p>
       </section>
     </main>

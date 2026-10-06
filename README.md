@@ -61,9 +61,11 @@ The application automatically limits Vercel runtime instances to one database
 connection. Never expose either connection string with a `NEXT_PUBLIC_` prefix
 or commit credentials to Git.
 
-The current role selector is development-only. A hosted interactive demo still
-requires an explicitly synthetic production demo mode or real authentication;
-do not enable it for real student information.
+The role selector remains disabled in production unless
+`SYNTHETIC_DEMO_MODE=true` is configured alongside a strong
+`DEVELOPMENT_AUTH_SECRET`. This mode is only for a hosted demo containing the
+fixed fictional seed records. Do not enable it for real student information;
+replace it with real authentication first.
 
 ## Quality checks
 
