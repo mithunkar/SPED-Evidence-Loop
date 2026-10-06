@@ -2,7 +2,12 @@ import { and, asc, eq } from "drizzle-orm";
 import type { NodePgDatabase } from "drizzle-orm/node-postgres";
 
 import type { AuthorizationActor } from "@/auth/authorization";
+import {
+  AuthorizationError,
+  canManageClassroom,
+} from "@/auth/authorization";
 import { students, userStudentAssignments } from "@/db/schema";
+import type { CreateStudentInput } from "@/domain/student";
 
 const studentSelection = {
   id: students.id,
@@ -52,4 +57,32 @@ export async function listAuthorizedStudents(
   }
 
   return buildAuthorizedStudentListQuery(database, actor);
+}
+
+export function buildCreateStudentQuery(
+  database: NodePgDatabase,
+  actor: AuthorizationActor,
+  input: CreateStudentInput,
+) {
+  if (!canManageClassroom(actor)) {
+    throw new AuthorizationError();
+  }
+
+  return database
+    .insert(students)
+    .values({
+      workspaceId: actor.workspaceId,
+      displayName: input.displayName,
+      status: "ACTIVE",
+    })
+    .returning({ id: students.id });
+}
+
+export async function createStudent(
+  database: NodePgDatabase,
+  actor: AuthorizationActor,
+  input: CreateStudentInput,
+) {
+  const [student] = await buildCreateStudentQuery(database, actor, input);
+  return student ?? null;
 }

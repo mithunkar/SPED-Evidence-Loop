@@ -46,11 +46,18 @@ export default async function DashboardPage() {
         <div>
           <h1 id="roster-title">Your students</h1>
         </div>
-        <div className="roster-count">
-          <strong>{roster.students.length}</strong>
-          <span>
-            {roster.students.length === 1 ? "student" : "students"}
-          </span>
+        <div className="roster-tools">
+          {identity.role === "TEACHER" ? (
+            <Link className="add-student-link" href="/students/new">
+              Add student
+            </Link>
+          ) : null}
+          <div className="roster-count">
+            <strong>{roster.students.length}</strong>
+            <span>
+              {roster.students.length === 1 ? "student" : "students"}
+            </span>
+          </div>
         </div>
       </section>
 

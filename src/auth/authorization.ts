@@ -21,7 +21,7 @@ export class AuthorizationError extends Error {
   readonly code = "FORBIDDEN";
 
   constructor() {
-    super("The current user is not authorized for this student.");
+    super("The current user is not authorized for this action.");
     this.name = "AuthorizationError";
   }
 }

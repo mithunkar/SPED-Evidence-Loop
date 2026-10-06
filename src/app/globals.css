@@ -434,6 +434,14 @@ main {
   margin-top: 0;
 }
 
+.back-link {
+  display: inline-flex;
+  margin-bottom: 22px;
+  color: var(--muted);
+  font-size: 13px;
+  font-weight: 800;
+}
+
 .auth-current {
   margin: 24px 0 0;
   padding: 13px 15px;
@@ -586,6 +594,31 @@ main {
   align-items: end;
   justify-content: space-between;
   gap: 32px;
+}
+
+.roster-tools {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.add-student-link {
+  min-height: 48px;
+  padding: 0 18px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 13px;
+  background: var(--ink);
+  color: var(--surface);
+  font-size: 13px;
+  font-weight: 800;
+}
+
+.add-student-link:focus-visible,
+.back-link:focus-visible {
+  outline: 3px solid var(--accent);
+  outline-offset: 3px;
 }
 
 .roster-heading h1 {
@@ -1948,6 +1981,20 @@ main {
 
   .roster-count {
     width: 100%;
+  }
+
+  .roster-tools {
+    width: 100%;
+  }
+
+  .add-student-link {
+    min-width: 0;
+    flex: 1;
+  }
+
+  .simple-hero {
+    width: min(100% - 28px, 980px);
+    padding-top: 72px;
   }
 
   .student-roster {

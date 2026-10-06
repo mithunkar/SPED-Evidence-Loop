@@ -4,6 +4,7 @@ import { describe, expect, it } from "vitest";
 import type { AuthorizationActor } from "@/auth/authorization";
 import { SYNTHETIC_SEED_IDS } from "@/db/seed-data";
 import { buildAuthorizedStudentListQuery } from "@/db/queries/students";
+import { buildCreateStudentQuery } from "@/db/queries/students";
 
 const database = drizzle.mock();
 
@@ -41,5 +42,24 @@ describe("authorized student queries", () => {
       SYNTHETIC_SEED_IDS.workspace,
       SYNTHETIC_SEED_IDS.assignedAssistant,
     ]);
+  });
+
+  it("creates a student inside the teacher's workspace", () => {
+    const query = buildCreateStudentQuery(database, teacher, {
+      displayName: "Avery",
+    }).toSQL();
+
+    expect(query.sql).toContain('insert into "students"');
+    expect(query.sql).toContain('"workspace_id"');
+    expect(query.params).toContain(SYNTHETIC_SEED_IDS.workspace);
+    expect(query.params).toContain("Avery");
+  });
+
+  it("prevents assistants from creating students", () => {
+    expect(() =>
+      buildCreateStudentQuery(database, assistant, {
+        displayName: "Avery",
+      }),
+    ).toThrow("The current user is not authorized for this action.");
   });
 });
