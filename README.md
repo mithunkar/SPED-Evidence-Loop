@@ -4,9 +4,21 @@ SPED Evidence Loop is a private classroom data-collection application for
 recording student goal observations, tracking teaching strategies, and preparing
 teacher-reviewed progress summaries.
 
-The project is currently in its local-foundation milestone and uses synthetic
-data only. See [`docs/SPED_EVIDENCE_LOOP_PRODUCT_REQUIREMENTS.md`](docs/SPED_EVIDENCE_LOOP_PRODUCT_REQUIREMENTS.md)
+The project is currently in its protected synthetic-demo milestone and uses
+fictional data only. See
+[`docs/SPED_EVIDENCE_LOOP_PRODUCT_REQUIREMENTS.md`](docs/SPED_EVIDENCE_LOOP_PRODUCT_REQUIREMENTS.md)
 for the product requirements and implementation plan.
+
+## Hosted synthetic demo
+
+The current Vercel deployment is available at
+[sped-evidence-loop-mithunkarth.vercel.app](https://sped-evidence-loop-mithunkarth.vercel.app).
+Vercel Authentication currently protects access. Once signed in to the owning
+Vercel account, choose a fictional teacher or assistant role, open an authorized
+student, and submit a scoring session backed by the synthetic Supabase database.
+
+This role selector is a test harness, not production authentication. Never enter
+real student, disability, IEP, medical, or educational-record information.
 
 ## Local development
 
