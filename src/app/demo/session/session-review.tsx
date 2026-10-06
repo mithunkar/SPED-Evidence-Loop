@@ -17,6 +17,9 @@ type SessionReviewProps = {
   rubric: readonly RubricLevel[];
   onBack: () => void;
   onSubmit: () => void;
+  isSubmitting?: boolean;
+  submitError?: string | null;
+  savesToDatabase?: boolean;
 };
 
 export function SessionReview({
@@ -25,6 +28,9 @@ export function SessionReview({
   rubric,
   onBack,
   onSubmit,
+  isSubmitting = false,
+  submitError = null,
+  savesToDatabase = false,
 }: SessionReviewProps) {
   return (
     <section className="review-surface" aria-labelledby="session-review-title">
@@ -34,8 +40,10 @@ export function SessionReview({
           Review synthetic session
         </h2>
         <p>
-          Confirm each outcome and strategy-use entry. This submission stays in
-          this browser and does not represent a production student record.
+          Confirm each outcome and strategy-use entry. This synthetic submission
+          {savesToDatabase
+            ? " will be saved to the hosted demo database."
+            : " stays in this browser and does not represent a production student record."}
         </p>
       </div>
 
@@ -87,13 +95,28 @@ export function SessionReview({
       </div>
 
       <div className="review-actions">
-        <button type="button" className="secondary-button" onClick={onBack}>
+        <button
+          type="button"
+          className="secondary-button"
+          onClick={onBack}
+          disabled={isSubmitting}
+        >
           Back to scoring
         </button>
-        <button type="button" className="primary-button" onClick={onSubmit}>
-          Submit synthetic session
+        <button
+          type="button"
+          className="primary-button"
+          onClick={onSubmit}
+          disabled={isSubmitting}
+        >
+          {isSubmitting ? "Saving…" : "Submit synthetic session"}
         </button>
       </div>
+      {submitError ? (
+        <p className="submission-error" role="alert">
+          {submitError}
+        </p>
+      ) : null}
     </section>
   );
 }

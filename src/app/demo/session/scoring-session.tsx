@@ -33,6 +33,8 @@ import type {
   RubricScore,
   StrategyFidelityStatus,
 } from "@/domain/scoring";
+import type { SessionSubmissionInput } from "@/domain/session-submission";
+import type { ScoringSubmissionResult } from "@/app/students/[studentId]/sessions/new/actions";
 
 import { SessionReview } from "./session-review";
 
@@ -47,6 +49,9 @@ type ScoringSessionProps = {
   rubric: readonly RubricLevel[];
   noDataReasons: readonly NoDataReason[];
   fidelityStatuses: readonly StrategyFidelityStatus[];
+  persistSubmission?: (
+    input: SessionSubmissionInput,
+  ) => Promise<ScoringSubmissionResult>;
 };
 
 type SessionMode = "entry" | "review" | "submitted";
@@ -56,6 +61,7 @@ export function ScoringSession({
   rubric,
   noDataReasons,
   fidelityStatuses,
+  persistSubmission,
 }: ScoringSessionProps) {
   const storedDraftSnapshot = useSyncExternalStore(
     subscribeToDemoDraft,
@@ -79,6 +85,11 @@ export function ScoringSession({
   const [submissionStored, setSubmissionStored] = useState(false);
   const [submittedDrafts, setSubmittedDrafts] =
     useState<DemoDrafts | null>(null);
+  const [databaseSubmission, setDatabaseSubmission] = useState<
+    Extract<ScoringSubmissionResult, { status: "success" }> | undefined
+  >();
+  const [submitError, setSubmitError] = useState<string | null>(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const activeDrafts =
     mode === "submitted" && submittedDrafts ? submittedDrafts : drafts;
 
@@ -134,7 +145,7 @@ export function ScoringSession({
     }
   };
 
-  const submitSession = () => {
+  const submitSession = async () => {
     if (!allGoalsComplete) {
       return;
     }
@@ -146,9 +157,64 @@ export function ScoringSession({
       new Date().toISOString(),
     );
 
-    setSubmittedDrafts(drafts);
-    setSubmissionStored(storeDemoSubmission(submission));
-    setMode("submitted");
+    setSubmitError(null);
+    setIsSubmitting(true);
+
+    try {
+      if (persistSubmission) {
+        const observations: SessionSubmissionInput["observations"] =
+          submission.observations.map((observation) => {
+            const context = {
+              goalId: observation.goalId,
+              fidelityStatus: observation.fidelityStatus,
+              note: observation.note.trim() || null,
+            };
+
+            if (observation.score === null) {
+              if (!observation.noDataReason) {
+                throw new Error("A no-data observation requires a reason.");
+              }
+
+              return {
+                ...context,
+                score: null,
+                noDataReason: observation.noDataReason,
+              };
+            }
+
+            return {
+              ...context,
+              score: observation.score,
+              noDataReason: null,
+            };
+          });
+        const input: SessionSubmissionInput = {
+          occurredAt: submission.submittedAt,
+          contextTags: [],
+          note: null,
+          observations,
+        };
+        const result = await persistSubmission(input);
+        if (result.status === "error") {
+          setSubmitError(result.message);
+          return;
+        }
+
+        setDatabaseSubmission(result);
+        setSubmissionStored(false);
+      } else {
+        setSubmissionStored(storeDemoSubmission(submission));
+      }
+
+      setSubmittedDrafts(drafts);
+      setMode("submitted");
+    } catch {
+      setSubmitError(
+        "The session could not be saved. Your draft is still available in this browser.",
+      );
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   const startAnotherSession = () => {
@@ -158,6 +224,8 @@ export function ScoringSession({
     );
     setSubmittedDrafts(null);
     setSubmissionStored(false);
+    setDatabaseSubmission(undefined);
+    setSubmitError(null);
     setMode("entry");
   };
 
@@ -408,7 +476,10 @@ export function ScoringSession({
           drafts={drafts}
           rubric={rubric}
           onBack={() => setMode("entry")}
-          onSubmit={submitSession}
+          onSubmit={() => void submitSession()}
+          isSubmitting={isSubmitting}
+          submitError={submitError}
+          savesToDatabase={Boolean(persistSubmission)}
         />
       ) : (
         <section
@@ -426,10 +497,20 @@ export function ScoringSession({
           <p>
             {session.goals.length} goal entries were recorded for{" "}
             {session.student.displayName}.
-            {submissionStored
+            {databaseSubmission
+              ? " The fictional session was saved to the hosted demo database."
+              : submissionStored
               ? " The fictional session is saved only in this browser for the upcoming history view."
               : " Browser storage was unavailable, so this confirmation will not persist."}
           </p>
+          {databaseSubmission?.potentialDuplicates.length ? (
+            <p className="duplicate-warning" role="note">
+              Possible duplicate: {databaseSubmission.potentialDuplicates.length}{" "}
+              matching session
+              {databaseSubmission.potentialDuplicates.length === 1 ? "" : "s"}{" "}
+              was recorded within ten minutes. This submission was still saved.
+            </p>
+          ) : null}
           <button
             type="button"
             className="primary-button"
@@ -440,6 +521,10 @@ export function ScoringSession({
           {submissionStored ? (
             <Link className="submission-history-link" href="/demo/history">
               Review submitted history
+            </Link>
+          ) : databaseSubmission ? (
+            <Link className="submission-history-link" href="/dashboard">
+              Return to your students
             </Link>
           ) : null}
         </section>

@@ -10,6 +10,8 @@ import {
   STRATEGY_FIDELITY_STATUSES,
 } from "@/domain/scoring";
 
+import { submitAuthorizedScoringSession } from "./actions";
+
 export const dynamic = "force-dynamic";
 
 export default async function NewStudentSessionPage({
@@ -28,12 +30,15 @@ export default async function NewStudentSessionPage({
     notFound();
   }
 
+  const submitSession = submitAuthorizedScoringSession.bind(null, studentId);
+
   return (
     <main className="demo-shell">
       <div className="demo-banner" role="note">
         <span className="demo-banner-dot" aria-hidden="true" />
-        Protected synthetic workflow — submission remains device-local in this
-        step
+        {context.source === "DATABASE"
+          ? "Protected synthetic workflow — submissions save to the demo database"
+          : "Protected synthetic workflow — submissions remain device-local"}
       </div>
 
       <header className="demo-header">
@@ -56,12 +61,15 @@ export default async function NewStudentSessionPage({
         rubric={DEFAULT_RUBRIC}
         noDataReasons={NO_DATA_REASONS}
         fidelityStatuses={STRATEGY_FIDELITY_STATUSES}
+        persistSubmission={
+          context.source === "DATABASE" ? submitSession : undefined
+        }
       />
 
       <footer className="demo-footer">
         <p>
           {context.source === "DATABASE"
-            ? "Goals loaded from PostgreSQL; this submission still stays in the browser."
+            ? "Goals and synthetic submissions use the configured PostgreSQL database."
             : "Goals loaded from the authorization-tested synthetic fixture."}
         </p>
         <Link href="/dashboard">Return to your students</Link>

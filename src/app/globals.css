@@ -1239,6 +1239,17 @@ main {
   gap: 10px;
 }
 
+.submission-error,
+.duplicate-warning {
+  margin-top: 16px;
+  padding: 12px 14px;
+  border: 1px solid #d6a47b;
+  border-radius: 12px;
+  background: #fff7ed;
+  color: #7c2d12;
+  font-weight: 700;
+}
+
 .review-actions .primary-button,
 .submission-confirmation .primary-button {
   border-color: var(--ink);
