@@ -17,10 +17,12 @@
 
 html {
   scroll-behavior: smooth;
+  -webkit-text-size-adjust: 100%;
 }
 
 body {
   margin: 0;
+  overflow-x: clip;
   background:
     radial-gradient(circle at 90% 8%, rgb(169 194 180 / 28%), transparent 26rem),
     var(--paper);
@@ -35,6 +37,15 @@ a {
 
 main {
   min-height: 100vh;
+  min-height: 100dvh;
+}
+
+a,
+button,
+input,
+select,
+textarea {
+  touch-action: manipulation;
 }
 
 .site-nav {
@@ -735,6 +746,9 @@ main {
 }
 
 .plan-empty a {
+  min-height: 44px;
+  display: inline-flex;
+  align-items: center;
   color: var(--accent);
   font-size: 13px;
   font-weight: 800;
@@ -1042,6 +1056,7 @@ main {
 }
 
 .demo-brand {
+  min-height: 44px;
   display: inline-flex;
   align-items: center;
   gap: 11px;
@@ -1655,8 +1670,10 @@ main {
 
 .submission-history-link {
   width: fit-content;
+  min-height: 44px;
   margin: 14px auto 0;
-  display: block;
+  display: flex;
+  align-items: center;
   color: var(--ink);
   font-size: 13px;
   font-weight: 800;
@@ -1996,6 +2013,9 @@ main {
 }
 
 .demo-footer a {
+  min-height: 44px;
+  display: inline-flex;
+  align-items: center;
   color: var(--ink);
   font-weight: 800;
 }
@@ -2166,12 +2186,23 @@ main {
   }
 
   .auth-shell {
-    width: min(100% - 20px, 760px);
-    padding-top: 20px;
+    width: min(calc(100% - 24px), 760px);
+    padding-top: max(20px, env(safe-area-inset-top));
+    padding-bottom: calc(40px + env(safe-area-inset-bottom));
   }
 
   .dashboard-shell {
-    width: min(100% - 20px, 980px);
+    width: min(calc(100% - 24px), 980px);
+    padding-bottom: calc(48px + env(safe-area-inset-bottom));
+  }
+
+  .dashboard-header {
+    min-height: 72px;
+  }
+
+  .dashboard-header .demo-brand > span:last-child {
+    display: inline;
+    font-size: 14px;
   }
 
   .dashboard-account > span {
@@ -2181,20 +2212,44 @@ main {
   .roster-heading {
     align-items: stretch;
     flex-direction: column;
-    padding-top: 40px;
+    gap: 22px;
+    padding: 36px 0 24px;
+  }
+
+  .roster-heading h1 {
+    font-size: clamp(40px, 12vw, 50px);
   }
 
   .roster-count {
-    width: 100%;
+    width: auto;
+    min-width: 92px;
+    min-height: 52px;
+    padding: 8px 12px;
+    display: flex;
+    align-items: baseline;
+    justify-content: center;
+    gap: 6px;
+    border-radius: 13px;
+  }
+
+  .roster-count strong {
+    font-size: 24px;
+  }
+
+  .roster-count span {
+    font-size: 9px;
   }
 
   .roster-tools {
     width: 100%;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    gap: 10px;
   }
 
   .add-student-link {
     min-width: 0;
-    flex: 1;
+    min-height: 52px;
   }
 
   .simple-hero {
@@ -2205,21 +2260,38 @@ main {
   .student-plan-heading {
     align-items: stretch;
     flex-direction: column;
-    padding-top: 40px;
+    gap: 22px;
+    padding: 36px 0 24px;
+  }
+
+  .student-plan-heading h1 {
+    overflow-wrap: anywhere;
+    font-size: clamp(40px, 13vw, 54px);
   }
 
   .plan-actions {
     width: 100%;
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    align-items: stretch;
   }
 
   .primary-action,
   .secondary-action,
   .danger-action {
-    flex: 1;
+    width: 100%;
+    min-height: 50px;
+    padding-inline: 12px;
+    text-align: center;
+  }
+
+  .plan-actions .primary-action {
+    grid-column: 1 / -1;
+    grid-row: 1;
   }
 
   .plan-actions form {
-    flex: 1;
+    width: 100%;
   }
 
   .plan-actions form .danger-action {
@@ -2231,19 +2303,62 @@ main {
   }
 
   .goal-list-item {
+    min-width: 0;
+    padding: 20px 18px;
     flex-direction: column;
+  }
+
+  .goal-list-item > div:first-child {
+    min-width: 0;
+  }
+
+  .goal-list-item h2,
+  .goal-list-item p,
+  .goal-strategy span {
+    overflow-wrap: anywhere;
   }
 
   .goal-item-actions {
     width: 100%;
-    grid-auto-flow: column;
+    display: flex;
     align-items: center;
     justify-content: space-between;
-    justify-items: start;
+    gap: 16px;
+  }
+
+  .goal-item-actions a {
+    min-height: 44px;
+    padding: 0 2px;
+    display: inline-flex;
+    align-items: center;
   }
 
   .student-roster {
     grid-template-columns: 1fr;
+  }
+
+  .student-roster-card {
+    min-height: 132px;
+    padding: 20px;
+    grid-template-columns: 48px minmax(0, 1fr) auto;
+    gap: 14px;
+  }
+
+  .student-roster-card h2 {
+    overflow-wrap: anywhere;
+    font-size: 24px;
+  }
+
+  .student-roster-card .student-status {
+    grid-column: 1 / span 2;
+  }
+
+  .student-card-action {
+    grid-column: 3;
+  }
+
+  .roster-empty {
+    padding: 44px 18px;
   }
 
   .auth-brand > span:last-child {
@@ -2251,9 +2366,25 @@ main {
   }
 
   .auth-surface {
-    margin-top: 34px;
-    padding: 28px 16px;
+    margin-top: 28px;
+    padding: 28px 18px;
     border-radius: 22px 22px 22px 7px;
+  }
+
+  .auth-heading h1 {
+    overflow-wrap: anywhere;
+    font-size: clamp(40px, 13vw, 52px);
+  }
+
+  .account-form {
+    margin-top: 28px;
+    gap: 22px;
+  }
+
+  .form-field input,
+  .form-field select,
+  .form-submit {
+    min-height: 52px;
   }
 
   .brand > span:last-child {
@@ -2278,7 +2409,8 @@ main {
   }
 
   .demo-shell {
-    width: min(100% - 20px, 900px);
+    width: min(calc(100% - 24px), 900px);
+    padding-bottom: calc(40px + env(safe-area-inset-bottom));
   }
 
   .demo-banner {
@@ -2291,11 +2423,18 @@ main {
   }
 
   .demo-brand > span:last-child {
-    display: none;
+    display: inline;
+    font-size: 13px;
   }
 
   .demo-header-actions {
     gap: 9px;
+  }
+
+  .demo-history-link {
+    min-height: 44px;
+    display: inline-flex;
+    align-items: center;
   }
 
   .demo-user {
@@ -2303,7 +2442,29 @@ main {
   }
 
   .session-heading {
-    padding-top: 40px;
+    gap: 24px;
+    padding: 34px 0 26px;
+  }
+
+  .session-heading h1 {
+    overflow-wrap: anywhere;
+    font-size: clamp(42px, 13vw, 56px);
+  }
+
+  .session-progress {
+    padding: 13px 14px;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    align-items: baseline;
+    column-gap: 12px;
+  }
+
+  .session-progress strong {
+    margin-top: 0;
+  }
+
+  .progress-track {
+    grid-column: 1 / -1;
   }
 
   .goal-card {
@@ -2312,19 +2473,32 @@ main {
   }
 
   .goal-card-heading {
-    gap: 12px;
+    align-items: start;
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .goal-card-heading > div {
+    min-width: 0;
   }
 
   .goal-card h2 {
-    font-size: 26px;
+    overflow-wrap: anywhere;
+    font-size: 25px;
+  }
+
+  .goal-objective,
+  .strategy-panel span {
+    overflow-wrap: anywhere;
   }
 
   .score-options {
-    gap: 5px;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 8px;
   }
 
   .score-button {
-    height: 54px;
+    height: 52px;
     border-radius: 11px;
   }
 
@@ -2347,6 +2521,13 @@ main {
   .review-actions {
     align-items: stretch;
     flex-direction: column-reverse;
+  }
+
+  .review-actions .primary-button,
+  .review-actions .secondary-button,
+  .submission-confirmation .primary-button {
+    width: 100%;
+    min-height: 50px;
   }
 
   .history-surface,
@@ -2372,6 +2553,38 @@ main {
 
   .demo-footer {
     flex-direction: column;
+  }
+
+  .back-link {
+    min-height: 44px;
+    margin-bottom: 14px;
+    align-items: center;
+  }
+
+  .dashboard-header .back-link {
+    margin-bottom: 0;
+  }
+}
+
+@media (max-width: 360px) {
+  .demo-brand > span:last-child {
+    font-size: 12px;
+  }
+
+  .demo-history-link {
+    font-size: 11px;
+  }
+
+  .student-plan-heading h1,
+  .session-heading h1 {
+    font-size: 40px;
+  }
+}
+
+@media (hover: none) {
+  .student-roster-card:hover,
+  .score-button:hover {
+    transform: none;
   }
 }
 
