@@ -687,8 +687,13 @@ main {
   gap: 10px;
 }
 
+.plan-actions form {
+  display: flex;
+}
+
 .primary-action,
-.secondary-action {
+.secondary-action,
+.danger-action {
   min-height: 46px;
   padding: 0 16px;
   display: inline-flex;
@@ -697,6 +702,8 @@ main {
   border-radius: 12px;
   font-size: 13px;
   font-weight: 800;
+  font-family: inherit;
+  cursor: pointer;
 }
 
 .primary-action {
@@ -707,6 +714,12 @@ main {
 .secondary-action {
   border: 1px solid var(--line);
   background: var(--surface);
+}
+
+.danger-action {
+  border: 1px solid #d9aaa3;
+  background: var(--surface);
+  color: #8d3026;
 }
 
 .plan-empty {
@@ -807,6 +820,7 @@ main {
 
 .primary-action:focus-visible,
 .secondary-action:focus-visible,
+.danger-action:focus-visible,
 .plan-empty a:focus-visible {
   outline: 3px solid var(--accent);
   outline-offset: 3px;
@@ -2199,8 +2213,17 @@ main {
   }
 
   .primary-action,
-  .secondary-action {
+  .secondary-action,
+  .danger-action {
     flex: 1;
+  }
+
+  .plan-actions form {
+    flex: 1;
+  }
+
+  .plan-actions form .danger-action {
+    width: 100%;
   }
 
   .form-row {

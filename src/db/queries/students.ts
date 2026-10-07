@@ -24,7 +24,12 @@ export function buildAuthorizedStudentListQuery(
     return database
       .select(studentSelection)
       .from(students)
-      .where(eq(students.workspaceId, actor.workspaceId))
+      .where(
+        and(
+          eq(students.workspaceId, actor.workspaceId),
+          eq(students.status, "ACTIVE"),
+        ),
+      )
       .orderBy(asc(students.displayName));
   }
 
@@ -41,6 +46,7 @@ export function buildAuthorizedStudentListQuery(
     .where(
       and(
         eq(students.workspaceId, actor.workspaceId),
+        eq(students.status, "ACTIVE"),
         eq(userStudentAssignments.workspaceId, actor.workspaceId),
         eq(userStudentAssignments.userId, actor.id),
       ),
@@ -67,6 +73,7 @@ export function buildAuthorizedStudentQuery(
   const baseConditions = [
     eq(students.workspaceId, actor.workspaceId),
     eq(students.id, studentId),
+    eq(students.status, "ACTIVE"),
   ];
 
   if (actor.role === "TEACHER") {
@@ -133,5 +140,41 @@ export async function createStudent(
   input: CreateStudentInput,
 ) {
   const [student] = await buildCreateStudentQuery(database, actor, input);
+  return student ?? null;
+}
+
+export function buildArchiveStudentQuery(
+  database: NodePgDatabase,
+  actor: AuthorizationActor,
+  studentId: string,
+  archivedAt = new Date(),
+) {
+  if (!canManageClassroom(actor)) {
+    throw new AuthorizationError();
+  }
+
+  return database
+    .update(students)
+    .set({
+      status: "ARCHIVED",
+      archivedAt,
+      updatedAt: archivedAt,
+    })
+    .where(
+      and(
+        eq(students.workspaceId, actor.workspaceId),
+        eq(students.id, studentId),
+        eq(students.status, "ACTIVE"),
+      ),
+    )
+    .returning({ id: students.id });
+}
+
+export async function archiveStudent(
+  database: NodePgDatabase,
+  actor: AuthorizationActor,
+  studentId: string,
+) {
+  const [student] = await buildArchiveStudentQuery(database, actor, studentId);
   return student ?? null;
 }

@@ -6,6 +6,9 @@ import { canManageClassroom } from "@/auth/authorization";
 import { listStudentGoals } from "@/db/queries/goals";
 import { findAuthorizedStudent } from "@/db/queries/students";
 
+import { archiveStudentAction } from "./actions";
+import { ArchiveStudentButton } from "./archive-student-button";
+
 export const dynamic = "force-dynamic";
 
 export default async function StudentPage({
@@ -21,7 +24,7 @@ export default async function StudentPage({
   const { studentId } = await params;
   const { db } = await import("@/db/client");
   const student = await findAuthorizedStudent(db, identity, studentId);
-  if (!student) {
+  if (!student || student.status !== "ACTIVE") {
     notFound();
   }
   const goals = await listStudentGoals(db, identity, student);
@@ -55,6 +58,10 @@ export default async function StudentPage({
               Record data
             </Link>
           ) : null}
+          <ArchiveStudentButton
+            action={archiveStudentAction.bind(null, student.id)}
+            studentName={student.displayName}
+          />
         </div>
       </section>
 
