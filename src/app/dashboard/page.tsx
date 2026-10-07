@@ -1,24 +1,12 @@
 import Link from "next/link";
-import { redirect } from "next/navigation";
 
-import {
-  getCurrentApplicationIdentity,
-  getVerifiedSupabaseUser,
-} from "@/auth/application-session";
+import { getPublicClassroomIdentity } from "@/classroom/public-classroom";
 import { loadAuthorizedStudentRoster } from "@/data/student-roster";
-
-import { signOutUser } from "./actions";
 
 export const dynamic = "force-dynamic";
 
 export default async function DashboardPage() {
-  const identity = await getCurrentApplicationIdentity();
-  if (!identity) {
-    if (await getVerifiedSupabaseUser()) {
-      redirect("/onboarding");
-    }
-    redirect("/sign-in");
-  }
+  const identity = await getPublicClassroomIdentity();
 
   const roster = await loadAuthorizedStudentRoster(identity);
 
@@ -34,11 +22,8 @@ export default async function DashboardPage() {
         <div className="dashboard-account">
           <span>
             <strong>{identity.displayName}</strong>
-            <small>{identity.role.toLowerCase()}</small>
+            <small>Public · no sign-in</small>
           </span>
-          <form action={signOutUser}>
-            <button type="submit">Sign out</button>
-          </form>
         </div>
       </header>
 

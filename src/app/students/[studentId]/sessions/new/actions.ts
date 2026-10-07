@@ -1,6 +1,6 @@
 "use server";
 
-import { getCurrentApplicationIdentity } from "@/auth/application-session";
+import { getPublicClassroomIdentity } from "@/classroom/public-classroom";
 import { loadAuthorizedScoringContext } from "@/data/scoring-context";
 import { persistAuthorizedSession } from "@/data/session-submission";
 import type { SessionSubmissionInput } from "@/domain/session-submission";
@@ -17,10 +17,7 @@ export async function submitAuthorizedScoringSession(
   studentId: string,
   input: SessionSubmissionInput,
 ): Promise<ScoringSubmissionResult> {
-  const identity = await getCurrentApplicationIdentity();
-  if (!identity) {
-    return { status: "error", message: "Your session has expired. Sign in again." };
-  }
+  const identity = await getPublicClassroomIdentity();
 
   if (!process.env.DATABASE_URL) {
     return {

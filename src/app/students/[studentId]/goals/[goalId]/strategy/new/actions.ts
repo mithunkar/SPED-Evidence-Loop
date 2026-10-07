@@ -2,8 +2,8 @@
 
 import { redirect } from "next/navigation";
 
-import { getCurrentApplicationIdentity } from "@/auth/application-session";
 import { canManageClassroom } from "@/auth/authorization";
+import { getPublicClassroomIdentity } from "@/classroom/public-classroom";
 import { findAuthorizedStudent } from "@/db/queries/students";
 import {
   createAndAssignStrategy,
@@ -21,8 +21,8 @@ export async function assignStrategyAction(
   _previousState: StrategyActionState,
   formData: FormData,
 ): Promise<StrategyActionState> {
-  const identity = await getCurrentApplicationIdentity();
-  if (!identity || !canManageClassroom(identity)) {
+  const identity = await getPublicClassroomIdentity();
+  if (!canManageClassroom(identity)) {
     return {
       status: "error",
       message: "You do not have permission to assign strategies.",

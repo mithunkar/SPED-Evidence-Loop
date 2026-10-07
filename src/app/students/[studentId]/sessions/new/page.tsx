@@ -1,8 +1,8 @@
 import Link from "next/link";
-import { notFound, redirect } from "next/navigation";
+import { notFound } from "next/navigation";
 
 import { ScoringSession } from "@/app/demo/session/scoring-session";
-import { getCurrentApplicationIdentity } from "@/auth/application-session";
+import { getPublicClassroomIdentity } from "@/classroom/public-classroom";
 import { loadAuthorizedScoringContext } from "@/data/scoring-context";
 import {
   DEFAULT_RUBRIC,
@@ -19,10 +19,7 @@ export default async function NewStudentSessionPage({
 }: {
   params: Promise<{ studentId: string }>;
 }) {
-  const identity = await getCurrentApplicationIdentity();
-  if (!identity) {
-    redirect("/sign-in");
-  }
+  const identity = await getPublicClassroomIdentity();
 
   const { studentId } = await params;
   const context = await loadAuthorizedScoringContext(identity, studentId);

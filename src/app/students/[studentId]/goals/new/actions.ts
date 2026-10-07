@@ -2,8 +2,8 @@
 
 import { redirect } from "next/navigation";
 
-import { getCurrentApplicationIdentity } from "@/auth/application-session";
 import { canManageClassroom } from "@/auth/authorization";
+import { getPublicClassroomIdentity } from "@/classroom/public-classroom";
 import { createGoal } from "@/db/queries/goals";
 import { findAuthorizedStudent } from "@/db/queries/students";
 import {
@@ -17,8 +17,8 @@ export async function createGoalAction(
   _previousState: GoalActionState,
   formData: FormData,
 ): Promise<GoalActionState> {
-  const identity = await getCurrentApplicationIdentity();
-  if (!identity || !canManageClassroom(identity)) {
+  const identity = await getPublicClassroomIdentity();
+  if (!canManageClassroom(identity)) {
     return {
       status: "error",
       message: "You do not have permission to add goals.",

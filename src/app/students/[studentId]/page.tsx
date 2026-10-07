@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
 
-import { getCurrentApplicationIdentity } from "@/auth/application-session";
+import { getPublicClassroomIdentity } from "@/classroom/public-classroom";
 import { canManageClassroom } from "@/auth/authorization";
 import { listStudentGoals } from "@/db/queries/goals";
 import { findAuthorizedStudent } from "@/db/queries/students";
@@ -13,10 +13,7 @@ export default async function StudentPage({
 }: {
   params: Promise<{ studentId: string }>;
 }) {
-  const identity = await getCurrentApplicationIdentity();
-  if (!identity) {
-    redirect("/sign-in");
-  }
+  const identity = await getPublicClassroomIdentity();
   if (!canManageClassroom(identity)) {
     redirect("/dashboard");
   }

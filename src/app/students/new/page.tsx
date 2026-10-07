@@ -1,8 +1,8 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
 
-import { getCurrentApplicationIdentity } from "@/auth/application-session";
 import { canManageClassroom } from "@/auth/authorization";
+import { getPublicClassroomIdentity } from "@/classroom/public-classroom";
 
 import { createStudentAction } from "./actions";
 import { StudentForm } from "./student-form";
@@ -10,10 +10,7 @@ import { StudentForm } from "./student-form";
 export const dynamic = "force-dynamic";
 
 export default async function NewStudentPage() {
-  const identity = await getCurrentApplicationIdentity();
-  if (!identity) {
-    redirect("/sign-in");
-  }
+  const identity = await getPublicClassroomIdentity();
   if (!canManageClassroom(identity)) {
     redirect("/dashboard");
   }

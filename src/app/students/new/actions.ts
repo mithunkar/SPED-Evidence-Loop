@@ -2,8 +2,8 @@
 
 import { redirect } from "next/navigation";
 
-import { getCurrentApplicationIdentity } from "@/auth/application-session";
 import { canManageClassroom } from "@/auth/authorization";
+import { getPublicClassroomIdentity } from "@/classroom/public-classroom";
 import { createStudent } from "@/db/queries/students";
 import {
   createStudentSchema,
@@ -14,8 +14,8 @@ export async function createStudentAction(
   _previousState: StudentActionState,
   formData: FormData,
 ): Promise<StudentActionState> {
-  const identity = await getCurrentApplicationIdentity();
-  if (!identity || !canManageClassroom(identity)) {
+  const identity = await getPublicClassroomIdentity();
+  if (!canManageClassroom(identity)) {
     return {
       status: "error",
       message: "You do not have permission to add students.",

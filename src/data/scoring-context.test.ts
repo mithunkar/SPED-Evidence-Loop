@@ -1,11 +1,10 @@
 import { describe, expect, it } from "vitest";
 
-import { getDevelopmentIdentity } from "@/auth/development-session";
-import { SYNTHETIC_SEED_IDS } from "@/db/seed-data";
+import { SYNTHETIC_SEED_IDS, syntheticSeedData } from "@/db/seed-data";
 import { loadAuthorizedScoringContext } from "@/data/scoring-context";
 
 const identity = (userId: string) => {
-  const user = getDevelopmentIdentity(userId);
+  const user = syntheticSeedData.users.find((candidate) => candidate.id === userId);
   if (!user) {
     throw new Error("Missing synthetic identity.");
   }

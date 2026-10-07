@@ -1,24 +1,20 @@
 # SPED Evidence Loop
 
-SPED Evidence Loop is a private classroom data-collection application for
-recording student goal observations, tracking teaching strategies, and preparing
-teacher-reviewed progress summaries.
+SPED Evidence Loop is a classroom data-collection application for recording
+student goal observations and tracking teaching strategies.
 
-The project is currently in its protected synthetic-demo milestone and uses
-fictional data only. See
+The current iteration intentionally uses one public classroom with no sign-in.
+Anyone with the production URL can view or change its records, so use aliases
+and fictional information only until authentication is restored. See
 [`docs/SPED_EVIDENCE_LOOP_PRODUCT_REQUIREMENTS.md`](docs/SPED_EVIDENCE_LOOP_PRODUCT_REQUIREMENTS.md)
 for the product requirements and implementation plan.
 
-## Hosted synthetic demo
+## Hosted classroom
 
 The current Vercel deployment is available at
-[sped-evidence-loop-mithunkarth.vercel.app](https://sped-evidence-loop-mithunkarth.vercel.app).
-Vercel Authentication currently protects access. Once signed in to the owning
-Vercel account, choose a fictional teacher or assistant role, open an authorized
-student, and submit a scoring session backed by the synthetic Supabase database.
-
-This role selector is a test harness, not production authentication. Never enter
-real student, disability, IEP, medical, or educational-record information.
+[sped-evidence-loop.vercel.app](https://sped-evidence-loop.vercel.app).
+It opens directly to the persistent Supabase-backed roster. Add a student, add
+goals and strategies, then open **Start session** to collect rubric data.
 
 ## Local development
 
@@ -41,10 +37,6 @@ cp .env.example .env
 docker compose up -d
 ```
 
-Replace `DEVELOPMENT_AUTH_SECRET` in `.env` with at least 32 random bytes before
-using the local role selector. The selector is disabled when `NODE_ENV` is
-`production` and is not a production authentication system.
-
 Database schemas live in `src/db/schema/`. Generate and apply migrations with:
 
 ```bash
@@ -53,10 +45,9 @@ npm run db:migrate
 npm run db:seed
 ```
 
-The seed command is safe to rerun. It inserts or updates a clearly labeled
-synthetic classroom with a teacher, two assistants, three student aliases,
-representative goals, and one active strategy assignment. It must not be used
-to import real student information.
+The seed command inserts a separate, clearly labeled synthetic classroom for
+development tests. The public classroom is created by the
+`public-classroom` migration and starts empty.
 
 ### Supabase and hosted environments
 
@@ -76,11 +67,9 @@ when the Supabase CA is installed and configured. The application automatically
 limits Vercel runtime instances to one database connection. Never expose either
 connection string with a `NEXT_PUBLIC_` prefix or commit credentials to Git.
 
-The role selector remains disabled in production unless
-`SYNTHETIC_DEMO_MODE=true` is configured alongside a strong
-`DEVELOPMENT_AUTH_SECRET`. This mode is only for a hosted demo containing the
-fixed fictional seed records. Do not enable it for real student information;
-replace it with real authentication first.
+The application connects to Supabase only through the server-side PostgreSQL
+connection. Its public browser does not receive database credentials or direct
+Data API table access.
 
 ## Quality checks
 
