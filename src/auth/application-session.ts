@@ -1,5 +1,6 @@
 import "server-only";
 
+import type { User } from "@supabase/supabase-js";
 import { cache } from "react";
 import { redirect } from "next/navigation";
 
@@ -22,11 +23,6 @@ type VerifiedSupabaseUser = {
   email: string;
 };
 
-type AuthenticatedSupabaseUser = VerifiedSupabaseUser & {
-  provider: string | null;
-  displayName: string;
-};
-
 const valueAsString = (value: unknown) =>
   typeof value === "string" ? value : null;
 
@@ -45,30 +41,6 @@ export const getVerifiedSupabaseUser = cache(
     return { id, email };
   },
 );
-
-async function getAuthenticatedSupabaseUser(): Promise<AuthenticatedSupabaseUser | null> {
-  const supabase = await createSupabaseServerClient();
-  const { data, error } = await supabase.auth.getUser();
-  const user = data.user;
-
-  if (error || !user?.email) {
-    return null;
-  }
-
-  const metadata = user.user_metadata ?? {};
-  const displayName =
-    valueAsString(metadata.full_name)?.trim() ||
-    valueAsString(metadata.name)?.trim() ||
-    user.email.split("@")[0] ||
-    "Classroom staff";
-
-  return {
-    id: user.id,
-    email: user.email,
-    provider: valueAsString(user.app_metadata?.provider),
-    displayName,
-  };
-}
 
 export const getCurrentApplicationIdentity = cache(
   async (): Promise<ApplicationIdentity | null> => {
@@ -105,12 +77,24 @@ export async function requireCurrentApplicationIdentity(): Promise<ApplicationId
   return identity;
 }
 
-/** Creates the classroom profile after a successful Google OAuth callback. */
-export async function provisionCurrentGoogleUser(): Promise<ApplicationIdentity | null> {
-  const user = await getAuthenticatedSupabaseUser();
-  if (!user || user.provider !== "google" || !process.env.DATABASE_URL) {
+/** Creates the classroom profile from the user returned by the OAuth exchange. */
+export async function provisionGoogleUser(
+  user: User | null,
+): Promise<ApplicationIdentity | null> {
+  if (
+    !user?.email ||
+    user.app_metadata?.provider !== "google" ||
+    !process.env.DATABASE_URL
+  ) {
     return null;
   }
+
+  const metadata = user.user_metadata ?? {};
+  const displayName =
+    valueAsString(metadata.full_name)?.trim() ||
+    valueAsString(metadata.name)?.trim() ||
+    user.email.split("@")[0] ||
+    "Classroom staff";
 
   const { db } = await import("@/db/client");
   if (!(await isApprovedEmail(db, user.email))) {
@@ -120,7 +104,7 @@ export async function provisionCurrentGoogleUser(): Promise<ApplicationIdentity 
   return provisionClassroomTeacher(db, {
     id: user.id,
     email: user.email,
-    displayName: user.displayName,
+    displayName,
     workspaceId: CLASSROOM_WORKSPACE_ID,
   });
 }

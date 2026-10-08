@@ -1,6 +1,6 @@
 import { NextResponse, type NextRequest } from "next/server";
 
-import { provisionCurrentGoogleUser } from "@/auth/application-session";
+import { provisionGoogleUser } from "@/auth/application-session";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 
 export async function GET(request: NextRequest) {
@@ -10,12 +10,12 @@ export async function GET(request: NextRequest) {
   }
 
   const supabase = await createSupabaseServerClient();
-  const { error } = await supabase.auth.exchangeCodeForSession(code);
+  const { data, error } = await supabase.auth.exchangeCodeForSession(code);
   if (error) {
     return NextResponse.redirect(new URL("/sign-in?error=google", request.url));
   }
 
-  const identity = await provisionCurrentGoogleUser();
+  const identity = await provisionGoogleUser(data.user);
   if (!identity) {
     await supabase.auth.signOut();
     return NextResponse.redirect(new URL("/access-denied", request.url));
