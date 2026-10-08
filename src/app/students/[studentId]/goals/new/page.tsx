@@ -2,7 +2,7 @@ import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
 
 import { canManageClassroom } from "@/auth/authorization";
-import { getPublicClassroomIdentity } from "@/classroom/public-classroom";
+import { requireCurrentApplicationIdentity } from "@/auth/application-session";
 import { findAuthorizedStudent } from "@/db/queries/students";
 
 import { createGoalAction } from "./actions";
@@ -15,7 +15,7 @@ export default async function NewGoalPage({
 }: {
   params: Promise<{ studentId: string }>;
 }) {
-  const identity = await getPublicClassroomIdentity();
+  const identity = await requireCurrentApplicationIdentity();
   if (!canManageClassroom(identity)) {
     redirect("/dashboard");
   }

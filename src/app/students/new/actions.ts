@@ -3,7 +3,7 @@
 import { redirect } from "next/navigation";
 
 import { canManageClassroom } from "@/auth/authorization";
-import { getPublicClassroomIdentity } from "@/classroom/public-classroom";
+import { requireCurrentApplicationIdentity } from "@/auth/application-session";
 import { createStudent } from "@/db/queries/students";
 import {
   createStudentSchema,
@@ -14,7 +14,7 @@ export async function createStudentAction(
   _previousState: StudentActionState,
   formData: FormData,
 ): Promise<StudentActionState> {
-  const identity = await getPublicClassroomIdentity();
+  const identity = await requireCurrentApplicationIdentity();
   if (!canManageClassroom(identity)) {
     return {
       status: "error",

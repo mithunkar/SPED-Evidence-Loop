@@ -3,7 +3,7 @@
 import { redirect } from "next/navigation";
 
 import { canManageClassroom } from "@/auth/authorization";
-import { getPublicClassroomIdentity } from "@/classroom/public-classroom";
+import { requireCurrentApplicationIdentity } from "@/auth/application-session";
 import { createGoal } from "@/db/queries/goals";
 import { findAuthorizedStudent } from "@/db/queries/students";
 import {
@@ -17,7 +17,7 @@ export async function createGoalAction(
   _previousState: GoalActionState,
   formData: FormData,
 ): Promise<GoalActionState> {
-  const identity = await getPublicClassroomIdentity();
+  const identity = await requireCurrentApplicationIdentity();
   if (!canManageClassroom(identity)) {
     return {
       status: "error",

@@ -3,7 +3,7 @@
 import { redirect } from "next/navigation";
 
 import { canManageClassroom } from "@/auth/authorization";
-import { getPublicClassroomIdentity } from "@/classroom/public-classroom";
+import { requireCurrentApplicationIdentity } from "@/auth/application-session";
 import { findAuthorizedStudent } from "@/db/queries/students";
 import {
   createAndAssignStrategy,
@@ -21,7 +21,7 @@ export async function assignStrategyAction(
   _previousState: StrategyActionState,
   formData: FormData,
 ): Promise<StrategyActionState> {
-  const identity = await getPublicClassroomIdentity();
+  const identity = await requireCurrentApplicationIdentity();
   if (!canManageClassroom(identity)) {
     return {
       status: "error",

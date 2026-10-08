@@ -3,11 +3,11 @@
 import { redirect } from "next/navigation";
 
 import { canManageClassroom } from "@/auth/authorization";
-import { getPublicClassroomIdentity } from "@/classroom/public-classroom";
+import { requireCurrentApplicationIdentity } from "@/auth/application-session";
 import { archiveStudent } from "@/db/queries/students";
 
 export async function archiveStudentAction(studentId: string) {
-  const identity = await getPublicClassroomIdentity();
+  const identity = await requireCurrentApplicationIdentity();
   if (!canManageClassroom(identity)) {
     redirect("/dashboard");
   }

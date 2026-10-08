@@ -2,7 +2,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 
 import { ScoringSession } from "@/app/demo/session/scoring-session";
-import { getPublicClassroomIdentity } from "@/classroom/public-classroom";
+import { requireCurrentApplicationIdentity } from "@/auth/application-session";
 import { loadAuthorizedScoringContext } from "@/data/scoring-context";
 import {
   DEFAULT_RUBRIC,
@@ -19,7 +19,7 @@ export default async function NewStudentSessionPage({
 }: {
   params: Promise<{ studentId: string }>;
 }) {
-  const identity = await getPublicClassroomIdentity();
+  const identity = await requireCurrentApplicationIdentity();
 
   const { studentId } = await params;
   const context = await loadAuthorizedScoringContext(identity, studentId);

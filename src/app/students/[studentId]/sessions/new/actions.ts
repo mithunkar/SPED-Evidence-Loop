@@ -1,6 +1,6 @@
 "use server";
 
-import { getPublicClassroomIdentity } from "@/classroom/public-classroom";
+import { requireCurrentApplicationIdentity } from "@/auth/application-session";
 import { loadAuthorizedScoringContext } from "@/data/scoring-context";
 import { persistAuthorizedSession } from "@/data/session-submission";
 import type { SessionSubmissionInput } from "@/domain/session-submission";
@@ -17,7 +17,7 @@ export async function submitAuthorizedScoringSession(
   studentId: string,
   input: SessionSubmissionInput,
 ): Promise<ScoringSubmissionResult> {
-  const identity = await getPublicClassroomIdentity();
+  const identity = await requireCurrentApplicationIdentity();
 
   if (!process.env.DATABASE_URL) {
     return {

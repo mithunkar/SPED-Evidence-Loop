@@ -68,6 +68,21 @@ export const users = pgTable(
   ],
 );
 
+/**
+ * Private enrollment list for the one classroom workspace. Entries are managed
+ * in Supabase Studio; they are never exposed through the browser Data API.
+ */
+export const approvedEmails = pgTable(
+  "approved_emails",
+  {
+    email: text("email").primaryKey(),
+    createdAt,
+  },
+  (table) => [
+    check("approved_emails_email_normalized", sql`${table.email} = lower(trim(${table.email}))`),
+  ],
+);
+
 export const students = pgTable(
   "students",
   {
