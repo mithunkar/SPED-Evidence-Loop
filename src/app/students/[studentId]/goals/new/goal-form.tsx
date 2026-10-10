@@ -6,15 +6,24 @@ import {
   initialGoalActionState,
   type GoalActionState,
 } from "@/domain/goal";
+import { SKILL_AREAS, type SkillArea } from "@/domain/catalog";
 
 type GoalFormProps = {
   action: (
     state: GoalActionState,
     formData: FormData,
   ) => Promise<GoalActionState>;
+  initialGoal?: {
+    title: string;
+    objectiveText: string;
+    domain: SkillArea;
+    targetScore: number | null;
+    status?: "ACTIVE" | "PAUSED" | "ARCHIVED";
+  };
+  submitLabel?: string;
 };
 
-export function GoalForm({ action }: GoalFormProps) {
+export function GoalForm({ action, initialGoal, submitLabel = "Save goal" }: GoalFormProps) {
   const [state, formAction, pending] = useActionState(
     action,
     initialGoalActionState,
@@ -30,6 +39,7 @@ export function GoalForm({ action }: GoalFormProps) {
           aria-invalid={Boolean(state.errors?.title)}
           aria-describedby={state.errors?.title ? "goal-title-error" : undefined}
           autoFocus
+          defaultValue={initialGoal?.title}
           required
         />
         {state.errors?.title ? (
@@ -48,6 +58,7 @@ export function GoalForm({ action }: GoalFormProps) {
             state.errors?.objectiveText ? "goal-objective-error" : undefined
           }
           required
+          defaultValue={initialGoal?.objectiveText}
         />
         {state.errors?.objectiveText ? (
           <small id="goal-objective-error">{state.errors.objectiveText[0]}</small>
@@ -59,7 +70,7 @@ export function GoalForm({ action }: GoalFormProps) {
           <span>Skill area</span>
           <select
             name="domain"
-            defaultValue=""
+            defaultValue={initialGoal?.domain ?? ""}
             aria-invalid={Boolean(state.errors?.domain)}
             aria-describedby={
               state.errors?.domain ? "goal-domain-error" : undefined
@@ -69,12 +80,7 @@ export function GoalForm({ action }: GoalFormProps) {
             <option value="" disabled>
               Choose one
             </option>
-            <option>Communication</option>
-            <option>Following directions</option>
-            <option>Social interaction</option>
-            <option>Motor</option>
-            <option>Self-help</option>
-            <option>Other</option>
+            {SKILL_AREAS.map((area) => <option key={area} value={area}>{area}</option>)}
           </select>
           {state.errors?.domain ? (
             <small id="goal-domain-error">{state.errors.domain[0]}</small>
@@ -83,7 +89,7 @@ export function GoalForm({ action }: GoalFormProps) {
 
         <label className="form-field">
           <span>Target score</span>
-          <select name="targetScore" defaultValue="">
+          <select name="targetScore" defaultValue={initialGoal?.targetScore?.toString() ?? ""}>
             <option value="">No target</option>
             <option value="4">4</option>
             <option value="3">3</option>
@@ -94,6 +100,17 @@ export function GoalForm({ action }: GoalFormProps) {
         </label>
       </div>
 
+      {initialGoal?.status ? (
+        <label className="form-field">
+          <span>Goal status</span>
+          <select name="status" defaultValue={initialGoal.status}>
+            <option value="ACTIVE">Active</option>
+            <option value="PAUSED">Paused</option>
+            <option value="ARCHIVED">Archived</option>
+          </select>
+        </label>
+      ) : null}
+
       {state.message ? (
         <p className="form-error" role="alert">
           {state.message}
@@ -101,7 +118,7 @@ export function GoalForm({ action }: GoalFormProps) {
       ) : null}
 
       <button className="form-submit" type="submit" disabled={pending}>
-        {pending ? "Saving…" : "Save goal"}
+        {pending ? "Saving…" : submitLabel}
       </button>
     </form>
   );

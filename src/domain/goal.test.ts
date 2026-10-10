@@ -8,13 +8,13 @@ describe("goal creation", () => {
       createGoalSchema.parse({
         title: "  Following directions ",
         objectiveText: " Follows a one-step direction. ",
-        domain: " Directions ",
+        domain: "Receptive Communication",
         targetScore: "3",
       }),
     ).toEqual({
       title: "Following directions",
       objectiveText: "Follows a one-step direction.",
-      domain: "Directions",
+      domain: "Receptive Communication",
       targetScore: 3,
     });
   });
@@ -23,7 +23,7 @@ describe("goal creation", () => {
     const result = createGoalSchema.parse({
       title: "Requesting help",
       objectiveText: "Requests help with a word or gesture.",
-      domain: "Communication",
+      domain: "Social Communication",
       targetScore: "",
     });
 

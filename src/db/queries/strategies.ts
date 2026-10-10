@@ -1,4 +1,4 @@
-import { and, eq } from "drizzle-orm";
+import { and, desc, eq } from "drizzle-orm";
 import type { NodePgDatabase } from "drizzle-orm/node-postgres";
 
 import {
@@ -66,6 +66,7 @@ export async function createAndAssignStrategy(
   goal: StrategyGoal,
   input: AssignStrategyInput,
   startsOn: string,
+  existingStrategyId?: string,
 ) {
   if (
     !canManageClassroom(actor) ||
@@ -93,15 +94,30 @@ export async function createAndAssignStrategy(
         ),
       );
 
+    const [currentStrategy] = existingStrategyId
+      ? await transaction
+          .select({ version: strategies.version })
+          .from(strategies)
+          .where(
+            and(
+              eq(strategies.workspaceId, actor.workspaceId),
+              eq(strategies.id, existingStrategyId),
+            ),
+          )
+          .orderBy(desc(strategies.version))
+          .limit(1)
+      : [];
+    const strategyVersion = currentStrategy ? currentStrategy.version + 1 : 1;
     const [strategy] = await transaction
       .insert(strategies)
       .values({
+        id: existingStrategyId,
         workspaceId: actor.workspaceId,
         name: input.name,
         purpose: `Support ${goal.title}`,
         instructions: input.instructions,
         fidelityPrompt: input.fidelityPrompt,
-        version: 1,
+        version: strategyVersion,
         status: "ACTIVE",
         createdByUserId: actor.id,
       })
@@ -126,4 +142,26 @@ export async function createAndAssignStrategy(
 
     return assignment ?? null;
   });
+}
+
+export async function findActiveStrategyForGoal(
+  database: NodePgDatabase,
+  actor: AuthorizationActor,
+  goalId: string,
+) {
+  if (!canManageClassroom(actor)) throw new AuthorizationError();
+  const [strategy] = await database
+    .select({ id: strategies.id, name: strategies.name, instructions: strategies.instructions, fidelityPrompt: strategies.fidelityPrompt })
+    .from(goalStrategyAssignments)
+    .innerJoin(
+      strategies,
+      and(
+        eq(strategies.workspaceId, goalStrategyAssignments.workspaceId),
+        eq(strategies.id, goalStrategyAssignments.strategyId),
+        eq(strategies.version, goalStrategyAssignments.strategyVersion),
+      ),
+    )
+    .where(and(eq(goalStrategyAssignments.workspaceId, actor.workspaceId), eq(goalStrategyAssignments.goalId, goalId), eq(goalStrategyAssignments.status, "ACTIVE")))
+    .limit(1);
+  return strategy ?? null;
 }

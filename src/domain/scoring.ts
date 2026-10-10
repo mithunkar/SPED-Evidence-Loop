@@ -21,23 +21,22 @@ export const DEFAULT_RUBRIC = [
     value: 3,
     label: "Prompted",
     description:
-      "Performs the skill after an adult points, gestures, models, or gives a verbal direction.",
+      "Adult points, gestures, models, and verbally directs the child to perform the skill.",
   },
   {
     value: 2,
     label: "Partial physical support",
-    description:
-      "Completes part of the skill independently with partial physical assistance.",
+    description: "Adult provides partial physical assistance; the child can complete some of the skill independently.",
   },
   {
     value: 1,
     label: "Full physical support",
-    description: "Completes the skill with full physical assistance.",
+    description: "Adult provides 100% physical (hand-under-hand) assistance to complete the skill.",
   },
   {
     value: 0,
     label: "Did not perform",
-    description: "Does not perform the skill during the opportunity.",
+    description: "Child refuses, walks away, ignores the adult, says no, or tantrums.",
   },
 ] as const satisfies readonly RubricLevel[];
 

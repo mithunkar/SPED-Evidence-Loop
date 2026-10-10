@@ -12,9 +12,11 @@ type StrategyFormProps = {
     state: StrategyActionState,
     formData: FormData,
   ) => Promise<StrategyActionState>;
+  initialStrategy?: { name: string; instructions: string; fidelityPrompt: string };
+  submitLabel?: string;
 };
 
-export function StrategyForm({ action }: StrategyFormProps) {
+export function StrategyForm({ action, initialStrategy, submitLabel = "Assign strategy" }: StrategyFormProps) {
   const [state, formAction, pending] = useActionState(
     action,
     initialStrategyActionState,
@@ -32,6 +34,7 @@ export function StrategyForm({ action }: StrategyFormProps) {
             state.errors?.name ? "strategy-name-error" : undefined
           }
           autoFocus
+          defaultValue={initialStrategy?.name}
           required
         />
         {state.errors?.name ? (
@@ -52,6 +55,7 @@ export function StrategyForm({ action }: StrategyFormProps) {
               : undefined
           }
           required
+          defaultValue={initialStrategy?.instructions}
         />
         {state.errors?.instructions ? (
           <small id="strategy-instructions-error">
@@ -66,6 +70,7 @@ export function StrategyForm({ action }: StrategyFormProps) {
           name="fidelityPrompt"
           maxLength={300}
           placeholder="Was the strategy used as planned?"
+          defaultValue={initialStrategy?.fidelityPrompt}
           aria-invalid={Boolean(state.errors?.fidelityPrompt)}
           aria-describedby={
             state.errors?.fidelityPrompt ? "strategy-check-error" : undefined
@@ -86,7 +91,7 @@ export function StrategyForm({ action }: StrategyFormProps) {
       ) : null}
 
       <button className="form-submit" type="submit" disabled={pending}>
-        {pending ? "Assigning…" : "Assign strategy"}
+        {pending ? "Saving…" : submitLabel}
       </button>
     </form>
   );

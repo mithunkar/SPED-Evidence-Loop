@@ -40,6 +40,8 @@ export async function seedSyntheticDevelopmentData(
           target: schema.students.id,
           set: {
             displayName: student.displayName,
+            group: student.group,
+            teacherNotes: null,
             status: student.status,
             updatedAt: student.updatedAt,
           },
@@ -71,7 +73,22 @@ export async function seedSyntheticDevelopmentData(
             version: goal.version,
             updatedAt: goal.updatedAt,
           },
-        });
+      });
+      await transaction
+        .insert(schema.goalRevisions)
+        .values({
+          workspaceId: goal.workspaceId,
+          goalId: goal.id,
+          version: goal.version,
+          title: goal.title,
+          objectiveText: goal.objectiveText,
+          domain: goal.domain,
+          targetScore: goal.targetScore,
+          expectedFrequency: goal.expectedFrequency,
+          createdByUserId: syntheticSeedData.users[0].id,
+          createdAt: goal.createdAt,
+        })
+        .onConflictDoNothing();
     }
 
     for (const strategy of syntheticSeedData.strategies) {

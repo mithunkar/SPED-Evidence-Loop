@@ -7,13 +7,18 @@ describe("student creation validation", () => {
     expect(
       createStudentSchema.parse({
         displayName: "  Avery  ",
+        group: "AM_MW",
       }),
-    ).toEqual({ displayName: "Avery" });
+    ).toEqual({ displayName: "Avery", group: "AM_MW" });
   });
 
   it("rejects a blank display name", () => {
     expect(
-      createStudentSchema.safeParse({ displayName: "  " }).success,
+      createStudentSchema.safeParse({ displayName: "  ", group: "AM_MW" }).success,
     ).toBe(false);
+  });
+
+  it("requires a schedule group", () => {
+    expect(createStudentSchema.safeParse({ displayName: "Avery" }).success).toBe(false);
   });
 });

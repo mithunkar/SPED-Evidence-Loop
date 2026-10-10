@@ -18,6 +18,7 @@ import {
 export async function assignStrategyAction(
   studentId: string,
   goalId: string,
+  existingStrategyId: string | undefined,
   _previousState: StrategyActionState,
   formData: FormData,
 ): Promise<StrategyActionState> {
@@ -64,6 +65,7 @@ export async function assignStrategyAction(
         new Date(),
         process.env.DEFAULT_WORKSPACE_TIMEZONE ?? "America/Los_Angeles",
       ),
+      existingStrategyId,
     );
     if (!assignment) {
       throw new Error("Strategy assignment returned no record.");

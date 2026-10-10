@@ -44,6 +44,15 @@ export default async function StudentPage({
           <h1 id="student-title">{student.displayName}</h1>
         </div>
         <div className="plan-actions">
+          <Link className="secondary-action" href={`/students/${studentId}/progress`}>
+            Progress
+          </Link>
+          <Link className="secondary-action" href={`/students/${studentId}/reports`}>
+            Parent summary
+          </Link>
+          <Link className="secondary-action" href={`/students/${studentId}/edit`}>
+            Edit student
+          </Link>
           <Link
             className="secondary-action"
             href={`/students/${studentId}/goals/new`}
@@ -89,6 +98,11 @@ export default async function StudentPage({
               </div>
               <div className="goal-item-actions">
                 <span className="student-status">{goal.status}</span>
+                <Link
+                  href={`/students/${studentId}/goals/${goal.id}/edit`}
+                >
+                  Edit goal
+                </Link>
                 <Link
                   href={`/students/${studentId}/goals/${goal.id}/strategy/new`}
                 >

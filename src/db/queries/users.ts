@@ -1,7 +1,7 @@
 import { eq } from "drizzle-orm";
 import type { NodePgDatabase } from "drizzle-orm/node-postgres";
 
-import { approvedEmails, users } from "@/db/schema";
+import { approvedEmails, users, workspaces } from "@/db/schema";
 
 const applicationUserSelection = {
   id: users.id,
@@ -29,6 +29,15 @@ export async function findApplicationUser(
 ) {
   const [user] = await buildApplicationUserQuery(database, userId);
   return user ?? null;
+}
+
+export async function findWorkspaceTimezone(database: NodePgDatabase, workspaceId: string) {
+  const [workspace] = await database
+    .select({ timezone: workspaces.timezone })
+    .from(workspaces)
+    .where(eq(workspaces.id, workspaceId))
+    .limit(1);
+  return workspace?.timezone ?? "America/Los_Angeles";
 }
 
 export function normalizeEmail(email: string) {

@@ -1,0 +1,1 @@
+CREATE INDEX "sessions_workspace_occurred_at_student_index" ON "sessions" ("workspace_id","occurred_at","student_id");

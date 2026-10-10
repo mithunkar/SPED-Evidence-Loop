@@ -7,8 +7,8 @@ import {
   type AuthorizationActor,
   type StudentAuthorizationScope,
 } from "@/auth/authorization";
-import { goals, goalStrategyAssignments, strategies } from "@/db/schema";
-import type { CreateGoalInput } from "@/domain/goal";
+import { goalRevisions, goals, goalStrategyAssignments, strategies } from "@/db/schema";
+import type { CreateGoalInput, UpdateGoalInput } from "@/domain/goal";
 
 const goalSelection = {
   id: goals.id,
@@ -105,7 +105,86 @@ export async function createGoal(
       position: (lastGoal?.position ?? -1) + 1,
       version: 1,
     })
-    .returning({ id: goals.id });
+    .returning({ id: goals.id, version: goals.version });
 
-  return goal ?? null;
+  if (!goal) {
+    return null;
+  }
+
+  await database.insert(goalRevisions).values({
+    workspaceId: actor.workspaceId,
+    goalId: goal.id,
+    version: goal.version,
+    title: input.title,
+    objectiveText: input.objectiveText,
+    domain: input.domain,
+    targetScore: input.targetScore,
+    expectedFrequency: "Each session",
+    createdByUserId: actor.id,
+  });
+
+  return goal;
+}
+
+export async function updateGoal(
+  database: NodePgDatabase,
+  actor: AuthorizationActor,
+  student: StudentAuthorizationScope,
+  goalId: string,
+  input: UpdateGoalInput,
+) {
+  if (!canManageClassroom(actor) || actor.workspaceId !== student.workspaceId) {
+    throw new AuthorizationError();
+  }
+
+  return database.transaction(async (transaction) => {
+    const [current] = await transaction
+      .select({ version: goals.version, expectedFrequency: goals.expectedFrequency })
+      .from(goals)
+      .where(
+        and(
+          eq(goals.workspaceId, actor.workspaceId),
+          eq(goals.studentId, student.id),
+          eq(goals.id, goalId),
+        ),
+      )
+      .limit(1);
+    if (!current) return null;
+
+    const version = current.version + 1;
+    const [goal] = await transaction
+      .update(goals)
+      .set({
+        title: input.title,
+        objectiveText: input.objectiveText,
+        domain: input.domain,
+        targetScore: input.targetScore,
+        status: input.status,
+        version,
+        activeTo: input.status === "ARCHIVED" ? new Date().toISOString().slice(0, 10) : null,
+        updatedAt: new Date(),
+      })
+      .where(
+        and(
+          eq(goals.workspaceId, actor.workspaceId),
+          eq(goals.studentId, student.id),
+          eq(goals.id, goalId),
+        ),
+      )
+      .returning({ id: goals.id, version: goals.version });
+    if (!goal) return null;
+
+    await transaction.insert(goalRevisions).values({
+      workspaceId: actor.workspaceId,
+      goalId: goal.id,
+      version: goal.version,
+      title: input.title,
+      objectiveText: input.objectiveText,
+      domain: input.domain,
+      targetScore: input.targetScore,
+      expectedFrequency: current.expectedFrequency,
+      createdByUserId: actor.id,
+    });
+    return goal;
+  });
 }

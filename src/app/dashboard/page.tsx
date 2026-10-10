@@ -3,13 +3,18 @@ import Link from "next/link";
 import { requireCurrentApplicationIdentity } from "@/auth/application-session";
 import { signOut } from "@/app/sign-in/actions";
 import { loadAuthorizedStudentRoster } from "@/data/student-roster";
+import { STUDENT_GROUP_LABELS, STUDENT_GROUPS, type StudentGroup } from "@/domain/catalog";
 
 export const dynamic = "force-dynamic";
 
-export default async function DashboardPage() {
+export default async function DashboardPage({ searchParams }: { searchParams: Promise<{ group?: string }> }) {
   const identity = await requireCurrentApplicationIdentity();
-
-  const roster = await loadAuthorizedStudentRoster(identity);
+  const [roster, query] = await Promise.all([loadAuthorizedStudentRoster(identity), searchParams]);
+  const selectedGroup = STUDENT_GROUPS.includes(query.group as StudentGroup)
+    ? (query.group as StudentGroup)
+    : STUDENT_GROUPS[0];
+  const groupCounts = Object.fromEntries(STUDENT_GROUPS.map((group) => [group, roster.students.filter((student) => student.group === group).length])) as Record<StudentGroup, number>;
+  const visibleStudents = roster.students.filter((student) => student.group === selectedGroup);
 
   return (
     <main className="dashboard-shell">
@@ -38,6 +43,7 @@ export default async function DashboardPage() {
           <h1 id="roster-title">Your students</h1>
         </div>
         <div className="roster-tools">
+          {identity.role === "TEACHER" ? <Link className="secondary-action" href="/dashboard/analytics">Classroom insights</Link> : null}
           {identity.role === "TEACHER" ? (
             <Link className="add-student-link" href="/students/new">
               Add student
@@ -52,19 +58,29 @@ export default async function DashboardPage() {
         </div>
       </section>
 
+      <nav className="group-folders" aria-label="Student schedule groups">
+        {STUDENT_GROUPS.map((group) => (
+          <Link key={group} href={`/dashboard?group=${group}`} className="group-folder" aria-current={selectedGroup === group ? "page" : undefined} data-selected={selectedGroup === group}>
+            <span aria-hidden="true">▰</span><strong>{STUDENT_GROUP_LABELS[group]}</strong><small>{groupCounts[group]} {groupCounts[group] === 1 ? "student" : "students"}</small>
+          </Link>
+        ))}
+      </nav>
+
       {roster.students.length === 0 ? (
         <section className="roster-empty" aria-labelledby="roster-empty-title">
           <span aria-hidden="true">0</span>
           <h2 id="roster-empty-title">No students assigned</h2>
           <p>Add your first student to begin collecting data.</p>
         </section>
+      ) : visibleStudents.length === 0 ? (
+        <section className="roster-empty"><span aria-hidden="true">0</span><h2>No students in {STUDENT_GROUP_LABELS[selectedGroup]}</h2><p>Add a student or choose another schedule group.</p></section>
       ) : (
         <ul className="student-roster" aria-label="Authorized students">
-          {roster.students.map((student) => (
+          {visibleStudents.map((student) => (
             <li key={student.id}>
               <Link
                 className="student-roster-card"
-                href={`/students/${student.id}`}
+                href={identity.role === "TEACHER" ? `/students/${student.id}` : `/students/${student.id}/sessions/new`}
                 aria-label={`Open ${student.displayName}`}
               >
                 <span className="student-avatar" aria-hidden="true">

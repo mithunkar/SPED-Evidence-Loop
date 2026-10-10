@@ -68,7 +68,7 @@ describe("authorized student queries", () => {
 
   it("creates a student inside the teacher's workspace", () => {
     const query = buildCreateStudentQuery(database, teacher, {
-      displayName: "Avery",
+      displayName: "Avery", group: "AM_MW",
     }).toSQL();
 
     expect(query.sql).toContain('insert into "students"');
@@ -80,7 +80,7 @@ describe("authorized student queries", () => {
   it("prevents assistants from creating students", () => {
     expect(() =>
       buildCreateStudentQuery(database, assistant, {
-        displayName: "Avery",
+        displayName: "Avery", group: "AM_MW",
       }),
     ).toThrow("The current user is not authorized for this action.");
   });

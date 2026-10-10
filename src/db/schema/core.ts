@@ -28,6 +28,16 @@ export const studentStatus = pgEnum("student_status", [
   "ACTIVE",
   "ARCHIVED",
 ]);
+export const studentGroup = pgEnum("student_group", ["AM_MW", "AM_TTH", "PM"]);
+export const skillArea = pgEnum("skill_area", [
+  "Social Communication",
+  "Social Emotional",
+  "Fine Motor",
+  "Gross Motor",
+  "Adaptive",
+  "Cognitive",
+  "Receptive Communication",
+]);
 export const goalStatus = pgEnum("goal_status", [
   "DRAFT",
   "ACTIVE",
@@ -93,6 +103,7 @@ export const students = pgTable(
     displayName: text("display_name").notNull(),
     externalReference: text("external_reference"),
     teacherNotes: text("teacher_notes"),
+    group: studentGroup("group").notNull(),
     status: studentStatus("status").default("ACTIVE").notNull(),
     createdAt,
     updatedAt,
@@ -106,6 +117,12 @@ export const students = pgTable(
     index("students_workspace_status_index").on(
       table.workspaceId,
       table.status,
+    ),
+    index("students_workspace_group_status_name_index").on(
+      table.workspaceId,
+      table.group,
+      table.status,
+      table.displayName,
     ),
   ],
 );
@@ -145,7 +162,7 @@ export const goals = pgTable(
     studentId: uuid("student_id").notNull(),
     title: text("title").notNull(),
     objectiveText: text("objective_text").notNull(),
-    domain: text("domain").notNull(),
+    domain: skillArea("domain").notNull(),
     targetScore: integer("target_score"),
     expectedFrequency: text("expected_frequency").notNull(),
     status: goalStatus("status").default("DRAFT").notNull(),
@@ -185,6 +202,44 @@ export const goals = pgTable(
     check(
       "goals_active_date_range",
       sql`${table.activeTo} is null or ${table.activeTo} >= ${table.activeFrom}`,
+    ),
+  ],
+);
+
+/** Immutable wording/configuration used to interpret historical observations. */
+export const goalRevisions = pgTable(
+  "goal_revisions",
+  {
+    workspaceId: uuid("workspace_id").notNull(),
+    goalId: uuid("goal_id").notNull(),
+    version: integer("version").notNull(),
+    title: text("title").notNull(),
+    objectiveText: text("objective_text").notNull(),
+    domain: skillArea("domain").notNull(),
+    targetScore: integer("target_score"),
+    expectedFrequency: text("expected_frequency").notNull(),
+    createdByUserId: uuid("created_by_user_id").notNull(),
+    createdAt,
+  },
+  (table) => [
+    primaryKey({
+      name: "goal_revisions_primary_key",
+      columns: [table.workspaceId, table.goalId, table.version],
+    }),
+    foreignKey({
+      name: "goal_revisions_goal_foreign_key",
+      columns: [table.workspaceId, table.goalId],
+      foreignColumns: [goals.workspaceId, goals.id],
+    }).onDelete("restrict"),
+    foreignKey({
+      name: "goal_revisions_creator_foreign_key",
+      columns: [table.workspaceId, table.createdByUserId],
+      foreignColumns: [users.workspaceId, users.id],
+    }).onDelete("restrict"),
+    check("goal_revisions_version_positive", sql`${table.version} > 0`),
+    check(
+      "goal_revisions_target_score_range",
+      sql`${table.targetScore} is null or ${table.targetScore} between 0 and 4`,
     ),
   ],
 );

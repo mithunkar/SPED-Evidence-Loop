@@ -33,7 +33,7 @@ export const DEMO_SESSION = {
     {
       id: "synthetic-goal-directions",
       title: "Following directions",
-      domain: "Classroom routines",
+      domain: "Receptive Communication",
       objective:
         "Follow a one- or two-step classroom direction during a familiar routine.",
       strategy: {
@@ -46,7 +46,7 @@ export const DEMO_SESSION = {
     {
       id: "synthetic-goal-help",
       title: "Requesting help",
-      domain: "Communication",
+      domain: "Social Communication",
       objective:
         "Use a word, sign, or communication tool to request help during a challenging activity.",
       strategy: {
@@ -59,7 +59,7 @@ export const DEMO_SESSION = {
     {
       id: "synthetic-goal-play",
       title: "Joining play",
-      domain: "Social interaction",
+      domain: "Social Emotional",
       objective:
         "Approach a peer activity and participate for at least one exchange.",
       strategy: null,

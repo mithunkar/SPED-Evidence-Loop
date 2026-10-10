@@ -4,7 +4,10 @@ import { getTableConfig } from "drizzle-orm/pg-core";
 
 import {
   goalStatus,
+  goalRevisions,
   goals,
+  skillArea,
+  studentGroup,
   studentStatus,
   userRole,
   userStatus,
@@ -21,6 +24,17 @@ describe("core database schema", () => {
       "ACTIVE",
       "PAUSED",
       "ARCHIVED",
+    ]);
+    expect(studentGroup.enumValues).toEqual(["AM_MW", "AM_TTH", "PM"]);
+    expect(skillArea.enumValues).toContain("Receptive Communication");
+  });
+
+  it("stores immutable goal revisions by workspace, goal, and version", () => {
+    const config = getTableConfig(goalRevisions);
+    expect(config.primaryKeys[0]?.columns.map((column) => column.name)).toEqual([
+      "workspace_id",
+      "goal_id",
+      "version",
     ]);
   });
 

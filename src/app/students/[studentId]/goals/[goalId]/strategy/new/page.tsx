@@ -4,7 +4,7 @@ import { notFound, redirect } from "next/navigation";
 import { canManageClassroom } from "@/auth/authorization";
 import { requireCurrentApplicationIdentity } from "@/auth/application-session";
 import { findAuthorizedStudent } from "@/db/queries/students";
-import { findAuthorizedGoal } from "@/db/queries/strategies";
+import { findActiveStrategyForGoal, findAuthorizedGoal } from "@/db/queries/strategies";
 
 import { assignStrategyAction } from "./actions";
 import { StrategyForm } from "./strategy-form";
@@ -31,8 +31,9 @@ export default async function NewStrategyPage({
   if (!goal) {
     notFound();
   }
+  const activeStrategy = await findActiveStrategyForGoal(db, identity, goal.id);
 
-  const action = assignStrategyAction.bind(null, studentId, goalId);
+  const action = assignStrategyAction.bind(null, studentId, goalId, activeStrategy?.id);
 
   return (
     <main className="auth-shell onboarding-shell">
@@ -42,9 +43,9 @@ export default async function NewStrategyPage({
       <section className="auth-surface" aria-labelledby="strategy-title">
         <div className="auth-heading">
           <p className="session-kicker">{goal.title}</p>
-          <h1 id="strategy-title">Assign a strategy</h1>
+          <h1 id="strategy-title">{activeStrategy ? "Edit strategy" : "Assign a strategy"}</h1>
         </div>
-        <StrategyForm action={action} />
+        <StrategyForm action={action} initialStrategy={activeStrategy ?? undefined} submitLabel={activeStrategy ? "Save new version" : "Assign strategy"} />
       </section>
     </main>
   );

@@ -24,6 +24,8 @@ export async function createStudentAction(
 
   const parsed = createStudentSchema.safeParse({
     displayName: formData.get("displayName"),
+    group: formData.get("group"),
+    teacherNotes: formData.get("teacherNotes"),
   });
   if (!parsed.success) {
     return {

@@ -76,6 +76,7 @@ export const syntheticSeedData = {
       id: SYNTHETIC_SEED_IDS.river,
       workspaceId: SYNTHETIC_SEED_IDS.workspace,
       displayName: "River",
+      group: "AM_MW",
       status: "ACTIVE",
       createdAt,
       updatedAt,
@@ -84,6 +85,7 @@ export const syntheticSeedData = {
       id: SYNTHETIC_SEED_IDS.sage,
       workspaceId: SYNTHETIC_SEED_IDS.workspace,
       displayName: "Sage",
+      group: "AM_TTH",
       status: "ACTIVE",
       createdAt,
       updatedAt,
@@ -92,6 +94,7 @@ export const syntheticSeedData = {
       id: SYNTHETIC_SEED_IDS.micah,
       workspaceId: SYNTHETIC_SEED_IDS.workspace,
       displayName: "Micah",
+      group: "PM",
       status: "ACTIVE",
       createdAt,
       updatedAt,
@@ -119,7 +122,7 @@ export const syntheticSeedData = {
       title: "Following directions",
       objectiveText:
         "Follow a one- or two-step classroom direction during a familiar routine.",
-      domain: "Classroom routines",
+      domain: "Receptive Communication",
       targetScore: 4,
       expectedFrequency: "Daily",
       status: "ACTIVE",
@@ -136,7 +139,7 @@ export const syntheticSeedData = {
       title: "Requesting help",
       objectiveText:
         "Use a word, sign, or communication tool to request help during a challenging activity.",
-      domain: "Communication",
+      domain: "Social Communication",
       targetScore: 4,
       expectedFrequency: "Daily",
       status: "ACTIVE",
@@ -153,7 +156,7 @@ export const syntheticSeedData = {
       title: "Joining play",
       objectiveText:
         "Approach a peer activity and participate for at least one exchange.",
-      domain: "Social interaction",
+      domain: "Social Emotional",
       targetScore: 3,
       expectedFrequency: "Three times weekly",
       status: "ACTIVE",
@@ -170,7 +173,7 @@ export const syntheticSeedData = {
       title: "Transitioning between activities",
       objectiveText:
         "Move to the next classroom activity after a visual or verbal transition cue.",
-      domain: "Classroom routines",
+      domain: "Adaptive",
       targetScore: 3,
       expectedFrequency: "Daily",
       status: "ACTIVE",
@@ -187,7 +190,7 @@ export const syntheticSeedData = {
       title: "Communicating a choice",
       objectiveText:
         "Indicate a choice between two classroom options using a word, sign, or communication tool.",
-      domain: "Communication",
+      domain: "Social Communication",
       targetScore: 4,
       expectedFrequency: "Daily",
       status: "ACTIVE",
@@ -204,7 +207,7 @@ export const syntheticSeedData = {
       title: "Taking turns",
       objectiveText:
         "Wait for and take one turn during a short adult-supported peer activity.",
-      domain: "Social interaction",
+      domain: "Social Emotional",
       targetScore: 3,
       expectedFrequency: "Three times weekly",
       status: "ACTIVE",
@@ -221,7 +224,7 @@ export const syntheticSeedData = {
       title: "Participating in cleanup",
       objectiveText:
         "Put away classroom materials when the cleanup routine begins.",
-      domain: "Classroom routines",
+      domain: "Adaptive",
       targetScore: 3,
       expectedFrequency: "Daily",
       status: "ACTIVE",

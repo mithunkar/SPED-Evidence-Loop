@@ -256,6 +256,21 @@ export function ScoringSession({
         </div>
       </section>
 
+      <aside className="rubric-key" aria-label="Scoring key">
+        <details open>
+          <summary>Scoring key</summary>
+          <dl>
+            {rubric.map((level) => (
+              <div key={level.value}>
+                <dt>{level.value} — {level.label}</dt>
+                <dd>{level.description}</dd>
+              </div>
+            ))}
+            <div><dt>ND — No data</dt><dd>No data was collected for that session. Select a reason before submitting.</dd></div>
+          </dl>
+        </details>
+      </aside>
+
       {mode === "entry" ? (
         <>
           <section className="goal-list" aria-label="Active goals">

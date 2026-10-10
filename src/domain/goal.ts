@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { skillAreaSchema } from "@/domain/catalog";
 
 const targetScoreSchema = z
   .union([z.literal(""), z.enum(["0", "1", "2", "3", "4"])])
@@ -15,15 +16,16 @@ export const createGoalSchema = z.object({
     .trim()
     .min(5, "Describe what the student should do.")
     .max(1000, "Objective must be 1,000 characters or fewer."),
-  domain: z
-    .string()
-    .trim()
-    .min(2, "Choose a skill area.")
-    .max(80, "Skill area must be 80 characters or fewer."),
+  domain: skillAreaSchema,
   targetScore: targetScoreSchema,
 });
 
 export type CreateGoalInput = z.output<typeof createGoalSchema>;
+
+export const updateGoalSchema = createGoalSchema.extend({
+  status: z.enum(["ACTIVE", "PAUSED", "ARCHIVED"]),
+});
+export type UpdateGoalInput = z.output<typeof updateGoalSchema>;
 
 export type GoalActionState = {
   status: "idle" | "error";

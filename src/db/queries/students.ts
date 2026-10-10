@@ -7,12 +7,14 @@ import {
   canManageClassroom,
 } from "@/auth/authorization";
 import { students, userStudentAssignments } from "@/db/schema";
-import type { CreateStudentInput } from "@/domain/student";
+import type { CreateStudentInput, UpdateStudentInput } from "@/domain/student";
 
 const studentSelection = {
   id: students.id,
   workspaceId: students.workspaceId,
   displayName: students.displayName,
+  group: students.group,
+  teacherNotes: students.teacherNotes,
   status: students.status,
 };
 
@@ -129,9 +131,54 @@ export function buildCreateStudentQuery(
     .values({
       workspaceId: actor.workspaceId,
       displayName: input.displayName,
+      group: input.group,
+      teacherNotes: input.teacherNotes || null,
       status: "ACTIVE",
     })
     .returning({ id: students.id });
+}
+
+export function buildUpdateStudentQuery(
+  database: NodePgDatabase,
+  actor: AuthorizationActor,
+  studentId: string,
+  input: UpdateStudentInput,
+) {
+  if (!canManageClassroom(actor)) {
+    throw new AuthorizationError();
+  }
+
+  return database
+    .update(students)
+    .set({
+      displayName: input.displayName,
+      group: input.group,
+      teacherNotes: input.teacherNotes || null,
+      updatedAt: new Date(),
+    })
+    .where(
+      and(
+        eq(students.workspaceId, actor.workspaceId),
+        eq(students.id, studentId),
+        eq(students.status, "ACTIVE"),
+      ),
+    )
+    .returning({ id: students.id });
+}
+
+export async function updateStudent(
+  database: NodePgDatabase,
+  actor: AuthorizationActor,
+  studentId: string,
+  input: UpdateStudentInput,
+) {
+  const [student] = await buildUpdateStudentQuery(
+    database,
+    actor,
+    studentId,
+    input,
+  );
+  return student ?? null;
 }
 
 export async function createStudent(

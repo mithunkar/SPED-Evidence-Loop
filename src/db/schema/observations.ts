@@ -12,7 +12,7 @@ import {
   uuid,
 } from "drizzle-orm/pg-core";
 
-import { goals, students, users } from "./core";
+import { goalRevisions, goals, students, users } from "./core";
 import { goalStrategyAssignments } from "./strategies";
 
 const createdAt = timestamp("created_at", { withTimezone: true })
@@ -84,6 +84,11 @@ export const sessions = pgTable(
       table.studentId,
       table.occurredAt,
     ),
+    index("sessions_workspace_occurred_at_student_index").on(
+      table.workspaceId,
+      table.occurredAt,
+      table.studentId,
+    ),
     index("sessions_duplicate_warning_index").on(
       table.workspaceId,
       table.studentId,
@@ -136,6 +141,15 @@ export const observations = pgTable(
       name: "observations_goal_foreign_key",
       columns: [table.workspaceId, table.studentId, table.goalId],
       foreignColumns: [goals.workspaceId, goals.studentId, goals.id],
+    }).onDelete("restrict"),
+    foreignKey({
+      name: "observations_goal_revision_foreign_key",
+      columns: [table.workspaceId, table.goalId, table.goalVersion],
+      foreignColumns: [
+        goalRevisions.workspaceId,
+        goalRevisions.goalId,
+        goalRevisions.version,
+      ],
     }).onDelete("restrict"),
     foreignKey({
       name: "observations_strategy_assignment_foreign_key",

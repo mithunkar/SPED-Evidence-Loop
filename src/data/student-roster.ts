@@ -26,10 +26,11 @@ export async function loadAuthorizedStudentRoster(
       actor,
       syntheticSeedData.students,
       syntheticSeedData.userStudentAssignments,
-    ).map(({ id, workspaceId, displayName, status }) => ({
+    ).map(({ id, workspaceId, displayName, group, status }) => ({
       id,
       workspaceId,
       displayName,
+      group,
       status,
     })),
   };
